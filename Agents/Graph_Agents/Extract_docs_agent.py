@@ -14,7 +14,7 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
     if state["messages"]:
-        # If there are messages, continue the conversation with the Gemini model.
+        # If there are messages, continue the conversation with the Mistral model.
         new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
     else:
         # If there are no messages, start with the welcome message.
