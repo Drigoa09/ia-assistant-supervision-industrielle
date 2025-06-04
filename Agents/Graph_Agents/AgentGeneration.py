@@ -2,6 +2,7 @@ from langchain_core.messages.ai import AIMessage
 from OrderState import OrderState
 from typing import Literal
 from model import model
+from langgraph.graph import StateGraph, START, END
 
 AGENT_GENERATION_SYSINT = (
     '''Tu es un assistant expert chargé de classifier des questions d'utilisateurs industriels.
@@ -71,9 +72,13 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
 
     return state | {"messages": [new_output]}
 
-def maybe_route_to_database(state: OrderState) -> Literal["chatbot", "__end__"]:
+def maybe_route_to_database(state: OrderState) -> Literal["human", "extract_docs"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
-    if state.get("finished", False):
-        return END
+    msgs = state.get("messages", [])
+
+    msg = msgs[-1]
+
+    if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
+        return "extract_docs"
     else:
-        return "chatbot"
+        return "human"

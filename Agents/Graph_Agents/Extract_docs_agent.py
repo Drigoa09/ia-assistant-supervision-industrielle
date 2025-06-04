@@ -10,7 +10,7 @@ WELCOME_MSG = (
     "Hi boi, how can i help u ?"
 )
 
-def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
+def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
     if state["messages"]:
