@@ -96,18 +96,11 @@ Cette structure servira directement à générer du code Python interrogeant une
 }'''
 )
 
-WELCOME_MSG = (
-    ""
-)
-
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
-    if state["messages"]:
-        # If there are messages, continue the conversation with the Mistral model.
-        new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
-    else:
-        # If there are no messages, start with the welcome message.
-        new_output = AIMessage(content=WELCOME_MSG)
+    # If there are messages, continue the conversation with the Mistral model.
+
+    new_output = model.invoke([AGENT_GENERATION_SYSINT] + [state["messages"][-2].content])
 
     return state | {"messages": [new_output]}

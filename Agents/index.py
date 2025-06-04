@@ -26,9 +26,12 @@ graph_builder.add_node("extract_docs", extract_docs_agent)
 
 # The chatbot will always go to the human next.
 
-graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
+#graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
 
 graph_builder.add_conditional_edges("human", maybe_exit_human_node)
+
+graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
+graph_builder.add_edge("extract_docs", "human")
 
 # Start with the chatbot again.
 graph_builder.add_edge(START, "chatbot")
