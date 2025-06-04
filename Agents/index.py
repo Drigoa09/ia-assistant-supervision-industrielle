@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 
-from Agents.Graph_Agents.AgentGeneration import chatbot_with_welcome_msg
-from Agents.Graph_Agents.human_node import human_node, maybe_exit_human_node
+from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg
+from Graph_Agents.human_node import human_node, maybe_exit_human_node
 
 from OrderState import OrderState
 
