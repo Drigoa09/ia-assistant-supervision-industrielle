@@ -3,10 +3,10 @@ from typing import Annotated, TypedDict
 from dotenv import load_dotenv
 from langchain import hub
 from langchain_ollama import ChatOllama
-from langgraph.graph import StateGraph, START
+from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
-from AgentGeneration import AGENT_GENERATION_SYSINT
+from AgentGeneration import AGENT_GENERATION_SYSINT, WELCOME_MSG
 
 import os
 
@@ -35,31 +35,77 @@ class OrderState(TypedDict):
     # Flag indicating that the order is placed and completed.
     finished: bool
 
-def chatbot(state: OrderState) -> OrderState:
-    """The chatbot itself. A simple wrapper around the model's own chat interface."""
-    message_history = [AGENT_GENERATION_SYSINT] + state["messages"]
-    return {"messages": [model.invoke(message_history)]}
+from langchain_core.messages.ai import AIMessage
 
 
-# Set up the initial graph based on our state definition.
+def human_node(state: OrderState) -> OrderState:
+    """Display the last model message to the user, and receive the user's input."""
+    last_msg = state["messages"][-1]
+    print("Model:", last_msg.content)
+
+    user_input = input("User: ")
+
+    # If it looks like the user is trying to quit, flag the conversation
+    # as over.
+    if user_input in {"q", "quit", "exit", "goodbye"}:
+        state["finished"] = True
+
+    return state | {"messages": [("user", user_input)]}
+
+
+def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
+    """The chatbot itself. A wrapper around the model's own chat interface."""
+
+    if state["messages"]:
+        # If there are messages, continue the conversation with the Gemini model.
+        new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
+    else:
+        # If there are no messages, start with the welcome message.
+        new_output = AIMessage(content=WELCOME_MSG)
+
+    return state | {"messages": [new_output]}
+
+
+# Start building a new graph.
 graph_builder = StateGraph(OrderState)
 
-# Add the chatbot function to the app graph as a node called "chatbot".
-graph_builder.add_node("chatbot", chatbot)
+# Add the chatbot and human nodes to the app graph.
+graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
+graph_builder.add_node("human", human_node)
 
-# Define the chatbot node as the app entrypoint.
+# Start with the chatbot again.
 graph_builder.add_edge(START, "chatbot")
 
-chat_graph = graph_builder.compile()
+# The chatbot will always go to the human next.
+graph_builder.add_edge("chatbot", "human");
 
-from pprint import pprint
+from typing import Literal
 
-user_msg = "Hello, what can you do?"
-state = chat_graph.invoke({"messages": [user_msg]})
 
-# The state object contains lots of information. Uncomment the pprint lines to see it all.
+def maybe_exit_human_node(state: OrderState) -> Literal["chatbot", "__end__"]:
+    """Route to the chatbot, unless it looks like the user is exiting."""
+    if state.get("finished", False):
+        return END
+    else:
+        return "chatbot"
+
+
+graph_builder.add_conditional_edges("human", maybe_exit_human_node)
+
+chat_with_human_graph = graph_builder.compile()
+
+# The default recursion limit for traversing nodes is 25 - setting it higher means
+# you can try a more complex order with multiple steps and round-trips (and you
+# can chat for longer!)
+config = {"recursion_limit": 100}
+
+# Remember that this will loop forever, unless you input `q`, `quit` or one of the
+# other exit terms defined in `human_node`.
+# Uncomment this line to execute the graph:
+state = chat_with_human_graph.invoke({"messages": []}, config)
+
+# Things to try:
+#  - Just chat! There's no ordering or menu yet.
+#  - 'q' to exit.
+
 # pprint(state)
-
-# Note that the final state now has 2 messages. Our HumanMessage, and an additional AIMessage.
-for msg in state["messages"]:
-    print(f"{type(msg).__name__}: {msg.content}")
