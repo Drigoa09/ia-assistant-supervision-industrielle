@@ -72,7 +72,7 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
 
     return state | {"messages": [new_output]}
 
-def maybe_route_to_database(state: OrderState) -> Literal["human", "extract_docs"]:
+def maybe_route_to_database(state: OrderState) -> Literal["erreur", "extract_docs", "human"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
 
     if not (msgs := state.get("messages", [])):
@@ -81,8 +81,11 @@ def maybe_route_to_database(state: OrderState) -> Literal["human", "extract_docs
     # Only route based on the last message.
     msg = msgs[-1].content
 
+    if msg == WELCOME_MSG:
+        return "human"
+
     # When the chatbot returns tool_calls, route to the "tools" node.
     if "TRUE" in msg:
         return "extract_docs"
     else:
-        return "human"
+        return "erreur"
