@@ -21,6 +21,7 @@ def search_elasticsearch(query: dict) -> list:
         query=query,
         size=10
     )
+    
     return [hit["_source"] for hit in response["hits"]["hits"]]
 
 tools = [search_elasticsearch]

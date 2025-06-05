@@ -109,7 +109,7 @@ def extract_docs_agent(state: OrderState) -> OrderState:
 
     return defaults | state | {"messages": [new_output]}
 
-def maybe_route_to_database(state: OrderState) -> Literal["database", "evaluation_doc_agent"]:
+def maybe_route_to_database(state: OrderState) -> Literal["query_elasticsearch", "human"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
 
     if not (msgs := state.get("messages", [])):
@@ -120,6 +120,6 @@ def maybe_route_to_database(state: OrderState) -> Literal["database", "evaluatio
 
     # When the chatbot returns tool_calls, route to the "tools" node.
     if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
-        return "database"
+        return "query_elasticsearch"
     else:
-        return "evaluation_doc_agent"
+        return "human"
