@@ -1,11 +1,12 @@
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START
 
-from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_database
+from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_extract_docs
 from Graph_Agents.human_node import human_node, maybe_exit_human_node
-from Graph_Agents.Extract_docs_agent import extract_docs_agent
+from Graph_Agents.Extract_docs_agent import extract_docs_agent, maybe_route_to_database
 from Graph_Agents.Evaluation_docs_agent import evaluation_docs_agent
 from Tools_nodes.message_erreur import afficher_erreur
+from Tools_nodes.database_node import tool_node, llm_with_tools
 
 from OrderState import OrderState
 
@@ -27,6 +28,7 @@ graph_builder.add_node("human", human_node)
 graph_builder.add_node("extract_docs", extract_docs_agent)
 graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
 graph_builder.add_node("erreur", afficher_erreur)
+graph_builder.add_node("database", tool_node)
 
 # The chatbot will always go to the human next.
 
@@ -34,10 +36,11 @@ graph_builder.add_node("erreur", afficher_erreur)
 
 graph_builder.add_conditional_edges("human", maybe_exit_human_node)
 
-graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
-graph_builder.add_edge("extract_docs", "evaluation_doc_agent")
+graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
+graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
 graph_builder.add_edge("erreur", "human")
 graph_builder.add_edge("evaluation_doc_agent", "human")
+graph_builder.add_edge("database", "extract_docs")
 
 # Start with the chatbot again.
 graph_builder.add_edge(START, "chatbot")

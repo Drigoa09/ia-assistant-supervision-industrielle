@@ -72,7 +72,7 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
 
     return state | {"messages": [new_output]}
 
-def maybe_route_to_database(state: OrderState) -> Literal["erreur", "extract_docs", "human"]:
+def maybe_route_to_extract_docs(state: OrderState) -> Literal["erreur", "extract_docs", "human"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
 
     if not (msgs := state.get("messages", [])):
