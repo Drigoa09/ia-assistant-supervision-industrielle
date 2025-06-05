@@ -102,11 +102,12 @@ Cette structure servira directement à générer du code Python interrogeant une
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
+    defaults = {"order": [], "finished": False}
     # If there are messages, continue the conversation with the Mistral model.
 
     new_output = llm_with_tools.invoke([AGENT_GENERATION_SYSINT] + [state["messages"][-2].content])
 
-    return state | {"messages": [new_output]}
+    return defaults | state | {"messages": [new_output]}
 
 def maybe_route_to_database(state: OrderState) -> Literal["database", "evaluation_doc_agent"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
