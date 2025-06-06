@@ -12,7 +12,7 @@ def generer_reponse(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
     # If there are messages, continue the conversation with the Mistral model.
-
-    new_output = model.invoke([AGENT_GENERATION_SYSINT] + [state["messages"][-4].content, state["messages"][-1].content])
+    print(state["question"] + state["tools_to_answer"])
+    new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["question"] + state["tools_to_answer"])
 
     return state | {"messages": [new_output]}

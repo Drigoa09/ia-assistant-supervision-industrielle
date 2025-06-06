@@ -96,13 +96,19 @@ Cette structure servira directement à générer du code Python interrogeant une
   },
 
   "méthodologie": "expliquer en français comment le traitement doit être réalisé, en utilisant uniquement les alias des variables"
+
+  N'hésites pas à utiliser les outils qui te sont proposés.
+  N'hésites pas à utiliser les outils qui te sont proposés.
+  N'hésites pas à utiliser les outils qui te sont proposés.
+  N'hésites pas à utiliser les outils qui te sont proposés.
+  N'hésites pas à utiliser les outils qui te sont proposés.
 }'''
 )
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
-    new_output = llm_with_tools.invoke([AGENT_GENERATION_SYSINT] + [state["messages"][-2].content])
+    new_output = llm_with_tools.invoke([AGENT_GENERATION_SYSINT] + state["question"] + state["tools_to_answer"])
     
     return state | {"messages": [new_output]}
 
@@ -117,6 +123,7 @@ def maybe_route_to_database(state: OrderState) -> Literal["query_elasticsearch",
 
     # When the chatbot returns tool_calls, route to the "tools" node.
     if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
+        state["tools_to_answer"].append(msg.tool_calls)
         return "query_elasticsearch"
     else:
         return "generer_reponse"

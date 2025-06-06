@@ -13,5 +13,23 @@ class OrderState(TypedDict):
     # The customer's in-progress order.
     order: list[str]
 
+    question:list
+    tools_to_answer: list
+
     # Flag indicating that the order is placed and completed.
     finished: bool
+
+    def getQuestion(self) -> list:
+        return self.question
+    
+    def get_tools_to_answer(self) -> list:
+        return self.tools_to_answer
+
+    def setQuestion(self, question:list) -> None:
+        self.question = question
+
+    def reset_tools_to_answer(self) -> None:
+        self.tools_to_answer = []
+
+    def add_element_in_tools_to_answer(self, element) -> None:
+        self.tools_to_answer.append(element)

@@ -66,6 +66,8 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
     if state["messages"]:
         # If there are messages, continue the conversation with the Mistral model.
         new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
+        state["question"] = [state["messages"][-1]] 
+        state["tools_to_answer"] = [] 
     else:
         # If there are no messages, start with the welcome message.
         new_output = AIMessage(content=WELCOME_MSG)
