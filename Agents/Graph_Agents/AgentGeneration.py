@@ -68,6 +68,7 @@ def chatbot_with_welcome_msg(state: OrderState) -> OrderState:
         new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
         state["question"] = [state["messages"][-1]] 
         state["tools_to_answer"] = [] 
+        state['Trois'] = False
     else:
         # If there are no messages, start with the welcome message.
         new_output = AIMessage(content=WELCOME_MSG)

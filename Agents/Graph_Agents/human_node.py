@@ -16,10 +16,10 @@ def human_node(state: OrderState) -> OrderState:
 
     return state | {"messages": [("user", user_input)]}
 
-def maybe_exit_human_node(state: OrderState) -> Literal["chatbot", "__end__"]:
+def maybe_exit_human_node(state: OrderState) -> Literal["extract_docs", "__end__"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
     if state.get("finished", False):
         return END
     else:
-        return "chatbot"
+        return "extract_docs"
     

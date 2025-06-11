@@ -26,12 +26,12 @@ os.environ["LANGCHAIN_PROJECT"] = "My_project"
 graph_builder = StateGraph(OrderState)
 
 # Add the chatbot and human nodes to the app graph.
-graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
+#graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
 graph_builder.add_node("human", human_node)
 graph_builder.add_node("extract_docs", extract_docs_agent)
 graph_builder.add_node("query_elasticsearch", tool_node)
-graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
-graph_builder.add_node("erreur", afficher_erreur)
+#graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
+#graph_builder.add_node("erreur", afficher_erreur)
 graph_builder.add_node("generer_reponse", generer_reponse)
 
 # The chatbot will always go to the human next.
@@ -40,15 +40,15 @@ graph_builder.add_node("generer_reponse", generer_reponse)
 
 graph_builder.add_conditional_edges("human", maybe_exit_human_node)
 
-graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
+#graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
 graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
 graph_builder.add_edge("query_elasticsearch", "extract_docs")
-graph_builder.add_edge("erreur", "human")
-graph_builder.add_edge("evaluation_doc_agent", "human")
+#graph_builder.add_edge("erreur", "human")
+#graph_builder.add_edge("evaluation_doc_agent", "human")
 graph_builder.add_edge("generer_reponse", "human")
 
 # Start with the chatbot again.
-graph_builder.add_edge(START, "chatbot")
+graph_builder.add_edge(START, "generer_reponse")
 
 chat_with_human_graph = graph_builder.compile()
 
@@ -71,3 +71,4 @@ from IPython.display import Image, display
 
 Image(chat_with_human_graph.get_graph().draw_mermaid_png())
 '''
+

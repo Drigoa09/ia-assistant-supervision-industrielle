@@ -33,6 +33,10 @@ from requests.auth import HTTPBasicAuth
 from datetime import datetime
 
 #CONFIGURATION
+ES_HOST = "https://10.96.1.81:9200"
+USERNAME = "elastic"
+PASSWORD = "superelsofhell"
+INDEX = "logstash-huron-k3x8f-202*"
 
 FIELDS = {
     "programme": "property.nomProgrammeSelect",
@@ -176,7 +180,22 @@ def tool_cycle(date_from : str, date_to : str) -> str:
         return {"colonnes" : df_final.columns, "donnees" : df_final.to_dict()}
     
 
-tools = [tool_cycle]
+@tool
+def getActionsList(input : str) -> str:
+    """Renvoie les arguments possible pour envoyer une querry à une base de donnée"""
+    return '''Possible arguments pour envoyer une querry :
+        cycles_intervals : obtenir les cycles et les intervalles'''
+
+@tool
+def sendQuerry(arg : str) -> str:
+    """Envoie une requête avec l'argument arg. Il est nécessaire d'entrer le bon argument arg sinon la fonction renvoie null"""
+    if arg == '\'cycles_intervals\'':
+        return '''Cycle 1 : Utilisation d'un laser pour découper des sushis. Intervalle : 10 s'''
+    else:
+        return '''Argument incorrect'''
+from langchain.agents import Tool
+
+tools = [Tool.from_function(func=getActionsList, name = "getActionList", description = "Renvoie les arguments possible pour envoyer une querry à une base de donnée"), Tool.from_function(func = sendQuerry, name="sendQuerry", description = "Envoie une requête avec l'argument arg. Il est nécessaire d'entrer le bon argument arg sinon la fonction renvoie null")]
 tool_node = ToolNode(tools)
 
 # LLM lié aux outils
