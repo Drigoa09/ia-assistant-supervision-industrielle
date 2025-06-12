@@ -121,3 +121,10 @@ body {
     max-width: 85%;
   }
 }
+
+/* Style for error messages in the chat */
+.error-message {
+  background-color: #ffebee !important; /* Light red background */
+  color: #c62828 !important; /* Darker red text */
+  border: 1px solid #c62828;
+}

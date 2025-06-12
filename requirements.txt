@@ -3,3 +3,4 @@ pandas
 jupyter
 requests
 urllib3
+Flask
