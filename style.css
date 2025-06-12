@@ -1,0 +1,123 @@
+body {
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+.chat-container {
+  width: 90%;
+  max-width: 500px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Ensures child elements conform to border radius */
+}
+
+.messages {
+  height: 400px; /* Fixed height, can be adjusted */
+  overflow-y: auto;
+  padding: 20px;
+  border-bottom: 1px solid #eeeeee;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Spacing between messages */
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 75%;
+  word-wrap: break-word; /* Ensures long words don't overflow */
+  line-height: 1.4;
+}
+
+.user-message {
+  background-color: #007bff;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px; /* Slightly different shape */
+}
+
+.assistant-message {
+  background-color: #e9ecef;
+  color: #333;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px; /* Slightly different shape */
+}
+
+.input-area {
+  display: flex;
+  padding: 15px;
+  background-color: #ffffff;
+  border-top: 1px solid #eeeeee;
+}
+
+.input-area input[type="text"] {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 20px; /* Pill shape */
+  margin-right: 10px;
+  font-size: 1rem;
+  outline: none; /* Remove default focus outline */
+}
+
+.input-area input[type="text"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.input-area button {
+  padding: 12px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px; /* Pill shape */
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.input-area button:hover {
+  background-color: #0056b3;
+}
+
+/* Basic responsiveness */
+@media (max-width: 600px) {
+  .chat-container {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .messages {
+    height: calc(100vh - 70px); /* Adjust based on input area height */
+  }
+
+  .input-area {
+    padding: 10px;
+  }
+
+  .input-area input[type="text"] {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .input-area button {
+    padding: 10px 15px;
+    font-size: 0.95rem;
+  }
+
+  .message {
+    max-width: 85%;
+  }
+}
