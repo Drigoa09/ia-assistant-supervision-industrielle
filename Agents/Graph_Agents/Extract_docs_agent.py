@@ -33,18 +33,21 @@ Use tools.'''
 
 )
 
-from langchain.agents import Tool, initialize_agent, AgentType
 from Tools_nodes.database_node import tools
+
+from langchain.agents import initialize_agent
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
     agent = initialize_agent(
     tools=tools,
     llm=model,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True,
+    verbose=True
     )
-    new_output = agent.run([AGENT_GENERATION_SYSINT] + state["messages"])
+
+    new_output = agent.run(
+        state["messages"]
+    )
 
     return state | {"messages": [new_output]}
 
