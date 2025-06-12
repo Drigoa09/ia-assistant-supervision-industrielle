@@ -1,8 +1,8 @@
 import os # For potential image path manipulation, though not fully used due to dir creation issues
 from langchain_core.messages import AIMessage, HumanMessage # HumanMessage for inspecting user input
 # OrderState is used for input structure, but output changes
-from Agents.OrderState import OrderState
-from Agents.model import model
+from OrderState import OrderState
+from model import model
 
 WELCOME_MSG = (
     "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"

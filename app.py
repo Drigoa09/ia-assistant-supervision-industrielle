@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, url_for
+from flask_cors import CORS # Added import
 from Agents.Graph_Agents.generateurReponse import generer_reponse
 # HumanMessage is needed to construct the input state for generer_reponse
 from langchain_core.messages import HumanMessage
@@ -6,6 +7,7 @@ from langchain_core.messages import HumanMessage
 # AGENT_GENERATION_SYSINT and WELCOME_MSG are also handled within generer_reponse.
 
 app = Flask(__name__)
+CORS(app) # Added CORS initialization
 # Ensure the static folder is configured. By default, Flask uses a 'static' folder in the same directory as the app.
 # If a different static folder name or path were used, it would need to be specified:
 # app = Flask(__name__, static_folder='your_static_folder_name', static_url_path='/your_static_url_path')

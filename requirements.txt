@@ -4,3 +4,4 @@ jupyter
 requests
 urllib3
 Flask
+Flask-CORS
