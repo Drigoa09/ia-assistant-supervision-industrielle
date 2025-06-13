@@ -1,7 +1,7 @@
 from langchain_core.messages.ai import AIMessage
-from OrderState import OrderState
+from ..OrderState import OrderState # Changed to relative
 from typing import Literal
-from model import model
+from ..model import model # Changed to relative
 from langgraph.graph import StateGraph, START, END
 
 def afficher_erreur(state: OrderState) -> OrderState:

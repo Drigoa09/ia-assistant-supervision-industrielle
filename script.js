@@ -79,9 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderChatHistory() {
+    console.log("Rendering history:", conversationHistory); // Added log
     messageArea.innerHTML = ''; // Clear existing messages
     conversationHistory.forEach(msg => {
-      appendMessage(msg.sender, msg.type || 'text', msg.content);
+      console.log("Appending message to UI from history:", msg); // Added log
+      // Add a basic check for message integrity
+      if (msg && typeof msg.sender !== 'undefined' && typeof msg.content !== 'undefined') {
+          appendMessage(msg.sender, msg.type || 'text', msg.content);
+      } else {
+          console.error("Malformed message in history:", msg);
+          // Optionally, append an error message to the UI for this malformed message
+          // appendMessage('system', 'error', 'Malformed message detected in history.');
+      }
     });
   }
 
@@ -114,16 +123,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const data = await response.json();
+      console.log("Received from server:", data); // Added log
 
       if (data.updated_history) {
         conversationHistory = data.updated_history;
+        console.log("Updated conversationHistory (from updated_history):", conversationHistory); // Added log
       } else {
         // If backend doesn't send back full history, manually add AI response to current history
         // This is a fallback, ideally backend sends complete history
         if (data.ui_response) {
              conversationHistory.push({sender: 'assistant', type: data.ui_response.type, content: data.ui_response.content});
+             console.log("Updated conversationHistory (manually added ui_response):", conversationHistory); // Added log
         } else {
-            throw new Error("Received no valid response or history from server.");
+            // If we don't have updated_history or a ui_response, it's an issue.
+            // But we should still render whatever history we had before, plus an error.
+            renderChatHistory(); // Render previous history first
+            throw new Error("Received no valid response or history update from server.");
         }
       }
       renderChatHistory();

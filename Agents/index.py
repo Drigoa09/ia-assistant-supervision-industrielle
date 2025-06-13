@@ -6,15 +6,16 @@ load_dotenv()
 
 from langgraph.graph import StateGraph, START
 
-from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_extract_docs
-from Graph_Agents.human_node import human_node, maybe_exit_human_node
-from Graph_Agents.Extract_docs_agent import extract_docs_agent, maybe_route_to_database
-from Graph_Agents.Evaluation_docs_agent import evaluation_docs_agent
-from Graph_Agents.generateurReponse import generer_reponse
-from Tools_nodes.message_erreur import afficher_erreur
-from Tools_nodes.database_node import tool_node
+from .Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_extract_docs
+from .Graph_Agents.human_node import human_node, maybe_exit_human_node
+from .Graph_Agents.Extract_docs_agent import extract_docs_agent, maybe_route_to_database
+from .Graph_Agents.Evaluation_docs_agent import evaluation_docs_agent
+from .Graph_Agents.generateurReponse import generer_reponse
+from .Tools_nodes.message_erreur import afficher_erreur
+from .Tools_nodes.database_node import tool_node
 
-from OrderState import OrderState
+from .OrderState import OrderState
+from .model import model # Added import for model, assuming it's used by the graph nodes
 
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"

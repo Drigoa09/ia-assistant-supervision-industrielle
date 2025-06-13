@@ -1,9 +1,10 @@
 from typing import Literal
 from langchain_core.messages.ai import AIMessage
-from OrderState import OrderState
-from model import model
+from ..OrderState import OrderState # Changed to relative
+from ..model import model # Changed to relative
 
-from Tools_nodes.database_node import llm_with_tools
+from ..Tools_nodes.database_node import llm_with_tools # Changed to relative
+from ..Tools_nodes.database_node import tools # Changed to relative (assuming tools is also from there)
 
 AGENT_GENERATION_SYSINT = (
     '''
@@ -33,7 +34,7 @@ Use tools.'''
 
 )
 
-from Tools_nodes.database_node import tools
+# from Tools_nodes.database_node import tools # This was a duplicate, removed. tools is imported above.
 
 from langchain.agents import initialize_agent
 

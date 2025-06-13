@@ -1,6 +1,6 @@
 from langchain_core.messages.ai import AIMessage
-from OrderState import OrderState
-from model import model
+from ..OrderState import OrderState # Changed to relative
+from ..model import model # Changed to relative
 
 AGENT_GENERATION_SYSINT = (
     '''

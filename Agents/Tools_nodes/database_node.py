@@ -2,7 +2,7 @@ import json
 from typing import Dict, List
 from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel
-from model import model
+from ..model import model # Changed to relative
 
 from langchain_core.tools import tool
 
