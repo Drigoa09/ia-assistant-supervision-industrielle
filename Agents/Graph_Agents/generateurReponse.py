@@ -22,26 +22,13 @@ def generer_reponse(state: OrderState) -> dict:
     Returns a dictionary like: {'type': 'text'|'image'|'list', 'data': ...}
     """
     user_message_text = ""
-    if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
-        user_message_text = state["messages"][-1].content.lower()
+    # The user_message_text inspection for keywords is removed as this node
+    # will now only generate text responses. Routing for different types (image/list)
+    # would be handled by the graph structure itself or other dedicated nodes.
+    # if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
+    #     user_message_text = state["messages"][-1].content.lower()
 
-    # Simulation based on keywords
-    if "image" in user_message_text:
-        # Simulate image generation and saving
-        # In a real scenario, the model or a tool would generate an image file here.
-        # Due to tool limitations, we cannot create files/directories reliably.
-        # We'll just return a placeholder filename.
-        image_filename = "simulated_graph.png"
-        # print(f"Simulating image generation: {image_filename} (would be saved to {STATIC_IMAGES_PATH})")
-        return {"type": "image", "data": image_filename}
-
-    elif "list" in user_message_text:
-        # Simulate list generation
-        sample_list = ["Élément 1 de la liste", "Élément 2", "Un autre élément"]
-        # print("Simulating list generation")
-        return {"type": "list", "data": sample_list}
-
-    # Default to text generation if no keywords are met
+    # Text generation logic
     if state["messages"]:
         # Original text generation logic
         ai_message_obj = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])

@@ -1,80 +1,125 @@
 from flask import Flask, request, jsonify, url_for
-from flask_cors import CORS # Added import
-from Agents.Graph_Agents.generateurReponse import generer_reponse
-# HumanMessage is needed to construct the input state for generer_reponse
-from langchain_core.messages import HumanMessage
-# AIMessage and SystemMessage are not directly used here anymore as generer_reponse's output is simplified.
-# AGENT_GENERATION_SYSINT and WELCOME_MSG are also handled within generer_reponse.
+from flask_cors import CORS
+from dotenv import load_dotenv
+from Agents.index import chat_with_human_graph # Import the compiled graph
+from OrderState import OrderState # Assuming OrderState.py is in the root
+from langchain_core.messages import HumanMessage, AIMessage
+
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app) # Added CORS initialization
-# Ensure the static folder is configured. By default, Flask uses a 'static' folder in the same directory as the app.
-# If a different static folder name or path were used, it would need to be specified:
+CORS(app)
 # app = Flask(__name__, static_folder='your_static_folder_name', static_url_path='/your_static_url_path')
 
-# Global error handler for unhandled exceptions
 @app.errorhandler(Exception)
 def handle_global_exception(e):
-    # Log the exception with traceback for server-side debugging
     import traceback
     app.logger.error('Unhandled Exception: %s', str(e))
     app.logger.error(traceback.format_exc())
-    # Return a standardized JSON error response to the client
     return jsonify({'type': 'error', 'content': 'An unexpected error occurred on the server. Please check server logs.'}), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
         data = request.json
-        user_message_text = data.get('message')
+        client_history = data.get('history', [])
+        user_input = data.get('newMessage') # This can be null for initial load
 
-        if user_message_text is None:
-            return jsonify({'type': 'error', 'content': 'No message provided'}), 400
+        # State Reconstruction
+        langchain_messages = []
 
-        print(f"Received message: {user_message_text}")
+        # Only process history if it exists and is not empty
+        if client_history:
+            for msg in client_history:
+                content = msg.get('content', '')
+                if msg.get('sender') == 'user':
+                    langchain_messages.append(HumanMessage(content=content))
+                elif msg.get('sender') == 'assistant':
+                    langchain_messages.append(AIMessage(content=content))
 
-        # Construct the initial state for generer_reponse
-        current_messages = [HumanMessage(content=user_message_text)]
-        initial_state = {
-            "messages": current_messages,
-            # Other OrderState fields, initialized to default/empty if not directly used for this interaction
-            "order": [],
-            "question": [],
-            "tools_to_answer": [],
-            "finished": False,
-            "Trois": False
-        }
-
-        # Call the assistant logic. It now returns a dict: {'type': ..., 'data': ...}
-        assistant_output = generer_reponse(initial_state)
-
-        response_type = assistant_output.get("type")
-        response_data = assistant_output.get("data")
-
-        if response_type == "text":
-            return jsonify({'type': 'text', 'content': response_data})
-        elif response_type == "image":
-            # response_data is the filename, e.g., "simulated_graph.png"
-            # IMPORTANT: This assumes 'static/images/' directory exists and contains the image.
-            # Directory creation failed earlier, so this URL will be generated but might not resolve to a viewable image.
-            image_url = url_for('static', filename=f'images/{response_data}', _external=True)
-            return jsonify({'type': 'image', 'content': image_url})
-        elif response_type == "list":
-            return jsonify({'type': 'list', 'content': response_data})
+        # Add the new user input if it's not None (i.e., not an initial call)
+        if user_input is not None:
+            langchain_messages.append(HumanMessage(content=user_input))
+            print(f"Received newMessage: {user_input}")
         else:
-            print(f"Unknown response type from assistant: {response_type}")
-            return jsonify({'type': 'error', 'content': 'Received unknown response type from assistant.'}), 500
+            # This is an initial call (newMessage is null)
+            print("Initial call detected (newMessage is null)")
+
+        if not langchain_messages and user_input is None: # Should only happen if client sends newMessage:null AND empty history
+             print("Effectively an initial call for welcome message, messages list is empty.")
+
+        print(f"Reconstructed langchain_messages: {langchain_messages}")
+        print(f"Received client_history: {client_history}")
+
+
+        # Construct the initial state for the graph
+        current_state = OrderState(
+            messages=langchain_messages,
+            order=[],
+            question=[],
+            tools_to_answer=[],
+            finished=False,
+            Trois=False,
+            ui=None # Initialize ui field, the graph should populate this
+        )
+
+        # Graph Invocation
+        config = {"recursion_limit": 100}
+        # Ensure chat_with_human_graph.invoke expects a dictionary that matches OrderState structure
+        output_state_dict = chat_with_human_graph.invoke(dict(current_state), config)
+
+        # Response Extraction
+        ui_response = None
+        # Check if 'ui' field is set by the graph and is a dictionary with 'type'
+        if output_state_dict.get('ui') and isinstance(output_state_dict['ui'], dict) and 'type' in output_state_dict['ui']:
+            ui_response = output_state_dict['ui']
+            # If type is image, ensure URL is correctly formed if 'content' is just a filename
+            if ui_response['type'] == 'image' and not ui_response['content'].startswith(('http://', 'https://', '/static/')):
+                 # This assumes 'content' from ui is a filename like 'image.png'
+                 ui_response['content'] = url_for('static', filename=f'images/{ui_response["content"]}', _external=True)
+
+        else:
+            # Fallback: Inspect the last AIMessage in the output state's messages
+            last_graph_message = output_state_dict['messages'][-1] if output_state_dict['messages'] else None
+            if last_graph_message and isinstance(last_graph_message, AIMessage):
+                ui_response = {'type': 'text', 'content': last_graph_message.content}
+            else:
+                ui_response = {'type': 'error', 'content': "Sorry, I couldn't process that or no UI response found."}
+
+        print(f"Sending UI Response: {ui_response}")
+
+        # Prepare Client History for Response
+        updated_client_history = []
+        for msg in output_state_dict.get('messages', []):
+            msg_type = 'text' # Default type for history messages
+            msg_content = ''
+            sender = ''
+
+            if isinstance(msg, HumanMessage):
+                sender = 'user'
+                msg_content = msg.content
+            elif isinstance(msg, AIMessage):
+                sender = 'assistant'
+                msg_content = msg.content # For history, we'll simplify AIMessage to its text content.
+                                          # The rich 'ui_response' is for the current turn's display.
+                                          # If AIMessage contains structured content (e.g. in additional_kwargs)
+                                          # that needs to be preserved differently in history, this logic would need expansion.
+
+            if sender and msg_content: # Only add if valid sender and content
+                 updated_client_history.append({'sender': sender, 'content': msg_content, 'type': msg_type})
+
+        return jsonify({
+            'ui_response': ui_response,
+            'updated_history': updated_client_history
+        })
 
     except Exception as e:
-        print(f"Error in /chat endpoint specific to this route: {e}") # Differentiate from global handler log
-        # Log the full traceback for debugging on the server
         import traceback
-        app.logger.error('Chat Endpoint Exception: %s', str(e)) # Use app.logger for consistency
+        app.logger.error('Chat Endpoint Exception: %s', str(e))
         app.logger.error(traceback.format_exc())
         return jsonify({'type': 'error', 'content': f'An error occurred while processing your request: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    # Configure logging for the app if not already configured elsewhere
     # For example, to see app.logger.error output:
     # import logging
     # logging.basicConfig(level=logging.DEBUG)

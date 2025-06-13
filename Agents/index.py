@@ -60,7 +60,7 @@ config = {"recursion_limit": 100}
 # Remember that this will loop forever, unless you input `q`, `quit` or one of the
 # other exit terms defined in `human_node`.
 # Uncomment this line to execute the graph:
-state = chat_with_human_graph.invoke({"messages": []}, config)
+# state = chat_with_human_graph.invoke({"messages": []}, config) # Commented out for app.py integration
 
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
@@ -69,6 +69,6 @@ state = chat_with_human_graph.invoke({"messages": []}, config)
 from langchain_core.runnables.graph import MermaidDrawMethod
 from IPython.display import Image, display
 
-Image(chat_with_human_graph.get_graph().draw_mermaid_png())
+# Image(chat_with_human_graph.get_graph().draw_mermaid_png()) # Commented out for app.py integration
 '''
 

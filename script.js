@@ -1,9 +1,11 @@
+let conversationHistory = []; // Global history variable
+
 document.addEventListener('DOMContentLoaded', () => {
   const messageArea = document.getElementById('messageArea');
   const messageInput = document.getElementById('messageInput');
   const sendButton = document.getElementById('sendButton');
 
-  // Refactored appendMessage function
+  // appendMessage function remains largely the same, responsible for rendering one message
   function appendMessage(sender, type, content) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'assistant-message');
@@ -19,10 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
         img.style.borderRadius = '8px'; // Match chat bubble style
-        img.onload = () => { // Scroll after image loads to get correct height
-            messageArea.scrollTop = messageArea.scrollHeight;
-        };
-        img.onerror = () => { // Handle broken image links
+        img.onload = () => { messageArea.scrollTop = messageArea.scrollHeight; };
+        img.onerror = () => {
             messageDiv.textContent = "Error loading image: " + content;
             messageArea.scrollTop = messageArea.scrollHeight;
         };
@@ -30,26 +30,22 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       case 'list':
         const listElement = document.createElement('ul');
-        listElement.style.listStylePosition = 'inside'; // Ensure bullets/numbers are inside the bubble
-        listElement.style.paddingLeft = '20px'; // Add some padding for the list items
-
+        listElement.style.listStylePosition = 'inside';
+        listElement.style.paddingLeft = '20px';
         if (Array.isArray(content)) {
-            // Handle simple array of strings
             content.forEach(itemText => {
                 const listItem = document.createElement('li');
                 listItem.textContent = itemText;
                 listElement.appendChild(listItem);
             });
         } else if (typeof content === 'object' && content !== null) {
-            // Handle object like {"Cycle A": ["Prog1", "Prog2"]}
             for (const key in content) {
                 if (Object.prototype.hasOwnProperty.call(content, key)) {
                     const mainListItem = document.createElement('li');
                     mainListItem.textContent = key + ':';
-
                     if (Array.isArray(content[key])) {
                         const subListElement = document.createElement('ul');
-                        subListElement.style.paddingLeft = '20px'; // Indent sub-list
+                        subListElement.style.paddingLeft = '20px';
                         content[key].forEach(program => {
                             const subListItem = document.createElement('li');
                             subListItem.textContent = program;
@@ -57,9 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         mainListItem.appendChild(subListElement);
                     } else {
-                        // If the value is not an array, display it directly (though not per example)
                         const subText = document.createElement('span');
-                        subText.textContent = ' ' + content[key]; // Add space after key
+                        subText.textContent = ' ' + content[key];
                         mainListItem.appendChild(subText);
                     }
                     listElement.appendChild(mainListItem);
@@ -72,89 +67,102 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       case 'error':
         messageDiv.textContent = `Error: ${content}`;
-        messageDiv.classList.add('error-message'); // Optional: for specific error styling
+        messageDiv.classList.add('error-message');
         break;
       default:
-        messageDiv.textContent = `Received an unknown response type: ${type}`;
+        messageDiv.textContent = `Received an unknown response type: ${type || 'undefined'}`;
         break;
     }
-
     messageArea.appendChild(messageDiv);
-    messageArea.scrollTop = messageArea.scrollHeight; // Scroll to the latest message
+    // Defer scroll until after current execution context, allowing DOM to update
+    setTimeout(() => { messageArea.scrollTop = messageArea.scrollHeight; }, 0);
+  }
+
+  function renderChatHistory() {
+    messageArea.innerHTML = ''; // Clear existing messages
+    conversationHistory.forEach(msg => {
+      appendMessage(msg.sender, msg.type || 'text', msg.content);
+    });
+  }
+
+  async function callChatAPI(newMessageText) {
+    // Show a temporary "Thinking..." message for immediate feedback
+    // This will be cleared on the next full re-render
+    if (newMessageText !== null) { // Don't show "Thinking..." for initial load
+        appendMessage('assistant', 'text', 'Traitement en cours...');
+    }
+
+    const payload = {
+      history: conversationHistory,
+      newMessage: newMessageText // Can be null for initial load
+    };
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let errorContent = `Request failed: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorContent = (errorData && errorData.content) ? errorData.content : errorContent;
+        } catch (e) { /* Ignore if error response is not JSON */ }
+        throw new Error(errorContent);
+      }
+
+      const data = await response.json();
+
+      if (data.updated_history) {
+        conversationHistory = data.updated_history;
+      } else {
+        // If backend doesn't send back full history, manually add AI response to current history
+        // This is a fallback, ideally backend sends complete history
+        if (data.ui_response) {
+             conversationHistory.push({sender: 'assistant', type: data.ui_response.type, content: data.ui_response.content});
+        } else {
+            throw new Error("Received no valid response or history from server.");
+        }
+      }
+      renderChatHistory();
+
+    } catch (error) {
+      // Remove the temporary "Thinking..." if it's the last message.
+      // This is a bit simplistic; a better way would be to give status messages IDs.
+      const lastMessageDiv = messageArea.lastElementChild;
+      if (lastMessageDiv && lastMessageDiv.textContent === 'Traitement en cours...') {
+          lastMessageDiv.remove();
+      }
+      appendMessage('assistant', 'error', error.message || 'A network error occurred, or the server is unreachable.');
+      console.error('Fetch error details:', error);
+    }
   }
 
   function handleSendMessage() {
     const messageText = messageInput.value.trim();
     if (messageText) {
-      appendMessage('user', 'text', messageText);
+      // Add user message to history immediately for responsiveness (optional, server is source of truth)
+      // conversationHistory.push({ sender: 'user', type: 'text', content: messageText });
+      // renderChatHistory(); // Optional: render user message immediately
+
+      callChatAPI(messageText);
       messageInput.value = '';
-
-      // Display "Traitement en cours..." message (temporary, not using appendMessage for this status)
-      const tempStatusDiv = document.createElement('div');
-      tempStatusDiv.classList.add('message', 'assistant-message', 'status-message'); // 'status-message' for potential specific styling
-      tempStatusDiv.textContent = 'Traitement en cours...';
-      messageArea.appendChild(tempStatusDiv);
-      messageArea.scrollTop = messageArea.scrollHeight;
-
-      fetch('http://127.0.0.1:5000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: messageText }),
-      })
-      .then(async response => { // Make this async to use await for response.json()
-        if (!response.ok) {
-          let errorContent = `Request failed with status: ${response.status}`;
-          try {
-            // Try to parse the error response body as JSON
-            const errorData = await response.json();
-            if (errorData && errorData.content) {
-              errorContent = errorData.content;
-            } else if (response.statusText) {
-              errorContent = response.statusText;
-            }
-          } catch (e) {
-            // JSON parsing failed, or it wasn't a JSON response
-            if (response.statusText) {
-                errorContent = response.statusText;
-            }
-            console.warn('Could not parse error response as JSON.', e);
-          }
-          throw new Error(errorContent); // Throw an error to be caught by the .catch() block
-        }
-        return response.json(); // If response is OK, parse it as JSON
-      })
-      .then(data => {
-        // Remove "Traitement en cours..." message
-        if (tempStatusDiv) {
-            tempStatusDiv.remove();
-        }
-
-        // Use the new appendMessage with type from backend
-        // Ensure data and data.type exist before trying to access them
-        const messageType = data && data.type ? data.type : 'error';
-        const messageContent = data && data.content ? data.content : 'Received an invalid response structure from server.';
-        appendMessage('assistant', messageType, messageContent);
-      })
-      .catch(error => {
-        // Remove "Traitement en cours..." message
-        if (tempStatusDiv) {
-            tempStatusDiv.remove();
-        }
-        // Display error message using the new appendMessage
-        // error.message here will be from the Error thrown above or from network failure
-        appendMessage('assistant', 'error', error.message || 'A network error occurred, or the server is unreachable.');
-        console.error('Fetch error details:', error);
-      });
     }
   }
 
-  sendButton.addEventListener('click', handleSendMessage);
+  async function loadInitialMessage() {
+    // Call API with null newMessage to signify initial load and get welcome message
+    await callChatAPI(null);
+  }
 
+  sendButton.addEventListener('click', handleSendMessage);
   messageInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
       handleSendMessage();
     }
   });
+
+  loadInitialMessage(); // Load welcome message on page start
 });
