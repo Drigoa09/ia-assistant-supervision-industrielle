@@ -186,60 +186,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // console.log("loadInitialMessage() function called"); // Original log - commented
     // await callChatAPI(null); // Original call - commented
 
-    console.log("loadInitialMessage() function called - SIMPLIFIED TEST");
+    console.log("loadInitialMessage: Now targeting /test_chat with a simple POST.");
     try {
-        console.log("SIMPLIFIED: About to fetch /chat (POST with empty body)");
-        const response = await fetch('/chat', { // Assuming /chat is the correct endpoint
+        const payload = { message: "Hello from client on initial load (test_chat)" }; // Changed to 'message' to match /test_chat expectation
+        console.log("TEST_CHAT: About to fetch /test_chat. Payload:", payload);
+
+        const response = await fetch('/test_chat', { // Target the new endpoint
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ history: [], newMessage: null })
+            body: JSON.stringify(payload)
         });
-        console.log("SIMPLIFIED: Fetch response status:", response.status, "Ok:", response.ok);
+
+        console.log("TEST_CHAT: Fetch response status:", response.status, "Ok:", response.ok);
 
         if (!response.ok) {
-            let errorContent = `Server error: ${response.status} ${response.statusText}`;
+            let errorContent = `Server error on /test_chat: ${response.status} ${response.statusText}`;
             try {
                 const errorData = await response.json();
-                console.log("SIMPLIFIED: Server error response JSON:", errorData);
-                if (errorData && errorData.content) {
+                console.log("TEST_CHAT: Server error response JSON:", errorData);
+                if (errorData && errorData.content) { // Assuming error structure {content: ...}
                     errorContent = errorData.content;
+                } else if (errorData && errorData.reply) { // Or if it's our test reply structure
+                     errorContent = JSON.stringify(errorData);
                 }
             } catch (e) {
-                console.error("SIMPLIFIED: Failed to parse server error JSON", e);
+                console.error("TEST_CHAT: Failed to parse server error JSON from /test_chat", e);
             }
             throw new Error(errorContent);
         }
 
         const data = await response.json();
-        console.log("SIMPLIFIED: Fetched data:", data);
+        console.log("TEST_CHAT: Fetched data from /test_chat:", data);
 
-        // NOTE: This simplified version does NOT update conversationHistory or render the chat.
-        // It's purely for testing the initial fetch and logging the direct response.
+        if (data && data.reply) {
+            console.log("TEST_CHAT: Server reply:", data.reply);
+            // For this test, display the reply on the UI to confirm visibility
+            appendMessage('assistant', 'text', `Test Reply: ${data.reply} (Received: ${data.received_message})`);
+        }
 
     } catch (error) {
-        console.error("SIMPLIFIED: VERY SPECIFIC Fetch error:", error);
+        console.error("TEST_CHAT: VERY SPECIFIC Fetch error for /test_chat:", error);
         if (error) {
-            console.error("SIMPLIFIED: Error name:", error.name);
-            console.error("SIMPLIFIED: Error message:", error.message);
-            console.error("SIMPLIFIED: Error stack:", error.stack);
+            console.error("TEST_CHAT: Error name:", error.name);
+            console.error("TEST_CHAT: Error message:", error.message);
+            console.error("TEST_CHAT: Error stack:", error.stack);
         } else {
-            console.error("SIMPLIFIED: Caught an undefined error during fetch.");
+            console.error("TEST_CHAT: Caught an undefined error during /test_chat fetch.");
         }
+        // For this test, display the error on the UI
+        appendMessage('assistant', 'error', `Test Error: ${error.message || 'Unknown fetch error'}`);
     }
   }
 
   console.log("Adding DOMContentLoaded listener for loadInitialMessage..."); // Added log
-  sendButton.addEventListener('click', function() {
-    console.log("Send button clicked, about to call handleSendMessage."); // Added log
-    handleSendMessage();
-  });
-  messageInput.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault(); // Added this line
-      console.log("Enter key pressed, about to call handleSendMessage."); // Existing log
-      handleSendMessage();
-    }
-  });
+  // Temporarily comment out other event listeners for clean test
+  // sendButton.addEventListener('click', function() {
+  //   console.log("Send button clicked, about to call handleSendMessage."); // Added log
+  //   handleSendMessage();
+  // });
+  // messageInput.addEventListener('keypress', (event) => {
+  //   if (event.key === 'Enter') {
+  //     event.preventDefault(); // Added this line
+  //     console.log("Enter key pressed, about to call handleSendMessage."); // Existing log
+  //     handleSendMessage();
+  //   }
+  // });
 
   loadInitialMessage(); // Load welcome message on page start
 });
