@@ -33,23 +33,33 @@ Use tools.'''
 
 )
 
+WELCOME_MSG = (
+    "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
+)
+
 from Tools_nodes.database_node import tools
 
-from langchain.agents import initialize_agent
+from langgraph.prebuilt import create_react_agent
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
-    agent = initialize_agent(
-    tools=tools,
-    llm=model,
-    verbose=True
+
+    if state['messages']:
+        agent = create_react_agent(
+        model=model,
+        tools=tools,
+        prompt=AGENT_GENERATION_SYSINT,
+        debug = True
     )
 
-    new_output = agent.run(
-        state["messages"]
-    )
+        new_output = agent.invoke(
+            state
+        )
 
-    return state | {"messages": [new_output]}
+    else:
+        new_output = {"messages" : [AIMessage(content=WELCOME_MSG)]}
+
+    return state | new_output
 
 def maybe_route_to_database(state: OrderState) -> Literal["query_elasticsearch", "generer_reponse"]:
     """Route to the chatbot, unless it looks like the user is exiting."""

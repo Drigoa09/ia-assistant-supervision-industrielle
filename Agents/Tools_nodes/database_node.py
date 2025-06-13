@@ -116,8 +116,8 @@ def build_dataframes(hits, fields):
         df = pd.DataFrame(data, columns=["timestamp", es_field])
         if not df.empty:
             df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.tz_localize(None)
-        dfs[es_field] = df.to_string
-    return str(dfs)
+        dfs[es_field] = df
+    return dfs
 
 
 # Extraire les intervalles de cycle
@@ -142,7 +142,6 @@ def extraire_intervalles(df_source, df_contexte, variable_contexte, seuil_pause=
         }
 
     return periodes
-
 
 # Exécution principale
 
@@ -170,7 +169,7 @@ def tool_cycle(date_from : str, date_to : str) -> str:
         return "Aucun programme détecté."
     else:
         # Découpage des cycles en intervalles
-        periodes = extraire_intervalles(df_tempsCycle, df_programme, "programme")
+        periodes = extraire_intervalles(df_tempsCycle, df_programme, df_programme)
 
         # Affichage final
         df_final = pd.DataFrame.from_dict(periodes, orient="index")
@@ -198,9 +197,9 @@ def sendQuerry(arg : str) -> str:
         return '''Argument incorrect'''
 from langchain.agents import Tool
 
-ES_HOST = "https://10.96.1.81:9200"
-USERNAME = "elastic"
-PASSWORD = "superelsofhell"
+ES_HOST = ""
+USERNAME = ""
+PASSWORD = ""
 
 es = Elasticsearch(
     ES_HOST,
@@ -267,8 +266,19 @@ def send_query(input : str):
 3. **date_from** : début de la période, au format Elasticsearch (ex : "now-30d/d" ou "2024-04-16T00:00:00Z"). Pas de fonction dans date_from
 4. **date_to** : fin de la période, au format Elasticsearch (ex : "now" ou "2024-04-16T23:59:59Z"). Pas de fonction dans date_to
 5. **QUESTION** : Question de l’utilisateur non modifiée
+6. **conversion_cycle** : Indique si nous devons associer un domaine avec des cycles. TRUE si nous voulons et FALSE sinon
 
-Ces valeurs doivent être retournées sous forme d’un objet JSON
+Ces valeurs doivent être retournées sous forme d’un objet JSON. Ce code JSON doit être prêt à l'exécution et vérifier toutes les contraintes
+d'un fichier JSON
+exemple :
+{{
+    "index": "logstash-huron-k3x8f-202*",
+    "fields": ["property.operatingTime", "property.nomProgrammeSelect"],
+    "date_from": "now-90d/d",
+    "date_to": "now",
+    "QUESTION": "Liste les cycles et les programmes associés",
+    "conversion_cycle": "TRUE"
+}}
 
 ---
  
@@ -293,6 +303,9 @@ Ces valeurs doivent être retournées sous forme d’un objet JSON
 - Si aucune période n’est mentionnée dans la question → considérer une période par défaut de 90 jours
 
     """
+
+    input = input[input.find("{"):input.find("}") + 1]
+
     dict_format_query = ast.literal_eval(input)
 
     all_hits = []
@@ -344,14 +357,34 @@ Ces valeurs doivent être retournées sous forme d’un objet JSON
 
         all_hits.extend(hits)
         search_after = hits[-1]["sort"][0]
+    
+    dataframes = build_dataframes(all_hits, dict_format_query["fields"])
+        
+    if dict_format_query["conversion_cycle"] == "TRUE":
+        df_tempsCycle = dataframes[dict_format_query["fields"][0]]
+        df_programme = dataframes[dict_format_query["fields"][1]]
 
-    return build_dataframes(all_hits, dict_format_query["fields"])
+        # Découpage des cycles en intervalles
+        periodes = extraire_intervalles(df_tempsCycle, df_programme, dict_format_query["fields"][1])
+
+        # Affichage final
+        df_final = pd.DataFrame.from_dict(periodes, orient="index")
+        df_final["start"] = pd.to_datetime(df_final["start"]).dt.strftime('%Y-%m-%d %H:%M:%S')
+        df_final["end"] = pd.to_datetime(df_final["end"]).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        dataframes = df_final
+    
+    return dataframes
     
 
+import numpy as np
 @tool
-def getDate(input : str):
-    '''Renvoie la date d'aujourd'hui sous format étrange que seul une IA peut gérer'''
-    return datetime.now(timezone.utc).isoformat()
+def getMax(input : str):
+    '''Obtenir le maximum d'une suite de nombres. Les nombres sont espacés sous cette forme par exemple : "2 4 5 6"'''
+    a = input.split()
+    b = list(map(float, a))
+
+    return np.max(np.array(b))
 
 class MyArgs(BaseModel):
     index : str
@@ -365,7 +398,7 @@ tool = Tool.from_function(
     description="Tu es un agent spécialisé dans les requêtes ElasticSearch. Utiliser getManFunction pour plus d'informations"
 )
 
-tools = [send_query]
+tools = [send_query, getMax]
 tool_node = ToolNode(tools)
 
 # LLM lié aux outils

@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-from langgraph.graph import StateGraph, START
+from langgraph.graph import StateGraph, START, MessagesState
 
 from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_extract_docs
 from Graph_Agents.human_node import human_node, maybe_exit_human_node
@@ -23,16 +23,17 @@ os.environ["LANGCHAIN_API_KEY"] = "lsv2_pt_f6656829097e4960849ecd99893d0977_7767
 os.environ["LANGCHAIN_PROJECT"] = "My_project"
 
 # Start building a new graph.
-graph_builder = StateGraph(OrderState)
+#graph_builder = StateGraph(OrderState)
+graph_builder = StateGraph(state_schema=MessagesState)
 
 # Add the chatbot and human nodes to the app graph.
 #graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
 graph_builder.add_node("human", human_node)
 graph_builder.add_node("extract_docs", extract_docs_agent)
-graph_builder.add_node("query_elasticsearch", tool_node)
+#graph_builder.add_node("query_elasticsearch", tool_node)
 #graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
 #graph_builder.add_node("erreur", afficher_erreur)
-graph_builder.add_node("generer_reponse", generer_reponse)
+#graph_builder.add_node("generer_reponse", generer_reponse)
 
 # The chatbot will always go to the human next.
 
@@ -41,14 +42,15 @@ graph_builder.add_node("generer_reponse", generer_reponse)
 graph_builder.add_conditional_edges("human", maybe_exit_human_node)
 
 #graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
-graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
-graph_builder.add_edge("query_elasticsearch", "extract_docs")
+#graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
+#graph_builder.add_edge("query_elasticsearch", "extract_docs")
 #graph_builder.add_edge("erreur", "human")
 #graph_builder.add_edge("evaluation_doc_agent", "human")
-graph_builder.add_edge("generer_reponse", "human")
+graph_builder.add_edge("extract_docs", "human")
+#graph_builder.add_edge("generer_reponse", "human")
 
 # Start with the chatbot again.
-graph_builder.add_edge(START, "generer_reponse")
+graph_builder.add_edge(START, "extract_docs")
 
 chat_with_human_graph = graph_builder.compile()
 

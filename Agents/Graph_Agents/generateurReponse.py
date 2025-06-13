@@ -1,5 +1,5 @@
 from typing import Literal
-from langchain_core.messages.ai import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from OrderState import OrderState
 from model import model
 
@@ -8,7 +8,7 @@ WELCOME_MSG = (
 )
 
 AGENT_GENERATION_SYSINT = (
-    '''Génère une réponse à partir du message qu'on te donne. La question est dans Human Message et la réponse est dans ToolMessage'''
+    '''Génère une réponse à partir du message qu'on te donne.'''
 )
 
 def generer_reponse(state: OrderState) -> OrderState:
@@ -17,7 +17,7 @@ def generer_reponse(state: OrderState) -> OrderState:
     # If there are messages, continue the conversation with the Mistral model.
     if state["messages"]:
 
-        new_output = model.invoke([AGENT_GENERATION_SYSINT] + state["messages"])
+        new_output = model.invoke(state["messages"] + [HumanMessage(AGENT_GENERATION_SYSINT)])
 
     else:
 

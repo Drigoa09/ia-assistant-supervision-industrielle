@@ -5,11 +5,9 @@ from langchain_mistralai import ChatMistralAI
 
 import os
 
-model = ChatOllama(model="mistral", temperature = 0)
+#model = ChatOllama(model="mistral", temperature = 0)
 
-'''
 os.environ["MISTRAL_API_KEY"] = ""
-model = "mistral-small-2503"
+model = "mistral-medium-latest"
 
 model = ChatMistralAI(model=model, temperature = 0)
-'''
