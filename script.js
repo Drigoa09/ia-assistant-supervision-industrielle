@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = { message: "Hello from client on initial load (test_chat)" }; // Changed to 'message' to match /test_chat expectation
         console.log("TEST_CHAT: About to fetch /test_chat. Payload:", payload);
 
-        const response = await fetch('/test_chat', { // Target the new endpoint
+        const response = await fetch('http://127.0.0.1:5000/test_chat', { // Target the new endpoint with full URL
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
