@@ -14,19 +14,6 @@ es = Elasticsearch(
     basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASSWORD")),
 )
 
-@tool
-def search_elasticsearch(query: dict) -> list:
-    """
-    Reçoit une requête Elasticsearch (au format dict) et retourne les documents.
-    """
-    response = es.search(
-        index=os.getenv("ES_INDEX"),
-        query=query,
-        size=10
-    )
-    
-    return [hit["_source"] for hit in response["hits"]["hits"]]
-
 #---------------------------------------------------------------------------------------------
 
 import pandas as pd
@@ -40,69 +27,6 @@ ES_HOST = ""
 USERNAME = ""
 PASSWORD = ""
 INDEX = "logstash-huron-k3x8f-202*"
-
-FIELDS = {
-    "programme": "property.nomProgrammeSelect",
-    "tempsCycle": "property.operatingTime"
-}
-
-DATE_FROM = "now-90d/d"
-DATE_TO = "now"
-PAGE_SIZE = 1000
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-# Requête Elastic
-def fetch_all_hits(es_host, index, field_list, date_from, date_to, auth, page_size=1000):
-    all_hits = []
-    search_after = None
-
-    while True:
-        query = {
-            "size": page_size,
-            "sort": [{"@timestamp": "asc"}],  
-            "query": {
-                "bool": {
-                    "filter": [
-                        {
-                            "range": {
-                                "@timestamp": {
-                                    "gte": date_from,
-                                    "lte": date_to,
-                                    "format": "strict_date_optional_time"
-                                }
-                            }
-                        }
-                    ],
-                    "should": [{"exists": {"field": field}} for field in field_list],
-                    "minimum_should_match": 1
-                }
-            },
-            "_source": ["@timestamp"] + field_list
-        }
-
-        if search_after:
-            query["search_after"] = [search_after]
-
-        response = requests.get(
-            f"{es_host}/{index}/_search",
-            auth=auth,
-            headers={"Content-Type": "application/json"},
-            json=query,
-            verify=False
-        )
-
-        if response.status_code != 200:
-            raise RuntimeError(f"Erreur {response.status_code} - {response.text}")
-
-        hits = response.json()["hits"]["hits"]
-        if not hits:
-            break
-
-        all_hits.extend(hits)
-        search_after = hits[-1]["sort"][0]
-
-    return all_hits
 
 
 # Construction DataFrame
@@ -143,63 +67,7 @@ def extraire_intervalles(df_source, df_contexte, variable_contexte, seuil_pause=
 
     return periodes
 
-# Exécution principale
-
-@tool
-def tool_cycle(date_from : str, date_to : str) -> str:
-    '''Liste les cycles et les programmes associés entre date_from et date_to. date_from et date_to sont des dates données au format ISO 8601'''
-
-    print(date_from, date_to)
-
-    auth = HTTPBasicAuth(USERNAME, PASSWORD)
-    es_fields = list(FIELDS.values())
-
-    hits = fetch_all_hits(ES_HOST, INDEX, es_fields, date_from, date_to, auth, PAGE_SIZE)
-    print(f" {len(hits)} documents récupérés\n")
-
-    # Extraction des DataFrames utilisés
-    dataframes = build_dataframes(hits, FIELDS)
-    df_tempsCycle = dataframes.get("tempsCycle")
-    df_programme = dataframes.get("programme")
-
-    # Vérification
-    if df_tempsCycle is None or df_tempsCycle.empty:
-        return "Aucun cycle détecté."
-    elif df_programme is None or df_programme.empty:
-        return "Aucun programme détecté."
-    else:
-        # Découpage des cycles en intervalles
-        periodes = extraire_intervalles(df_tempsCycle, df_programme, df_programme)
-
-        # Affichage final
-        df_final = pd.DataFrame.from_dict(periodes, orient="index")
-        df_final["start"] = pd.to_datetime(df_final["start"]).dt.strftime('%Y-%m-%d %H:%M:%S')
-        df_final["end"] = pd.to_datetime(df_final["end"]).dt.strftime('%Y-%m-%d %H:%M:%S')
-
-        df_final.drop(["temps(s)"], axis=1)
-        print("Intervalles de cycles et programmes associés :")
-        print(df_final.to_string(index=True))
-        return {"colonnes" : df_final.columns, "donnees" : df_final.to_dict()}
-    
-
-@tool
-def getActionsList(input : str) -> str:
-    """Renvoie les arguments possible pour envoyer une querry à une base de donnée"""
-    return '''Possible arguments pour envoyer une querry :
-        cycles_intervals : obtenir les cycles et les intervalles'''
-
-@tool
-def sendQuerry(arg : str) -> str:
-    """Envoie une requête avec l'argument arg. Il est nécessaire d'entrer le bon argument arg sinon la fonction renvoie null"""
-    if arg == '\'cycles_intervals\'':
-        return '''Cycle 1 : Utilisation d'un laser pour découper des sushis. Intervalle : 10 s'''
-    else:
-        return '''Argument incorrect'''
 from langchain.agents import Tool
-
-ES_HOST = ""
-USERNAME = ""
-PASSWORD = ""
 
 es = Elasticsearch(
     ES_HOST,
@@ -210,49 +78,6 @@ es = Elasticsearch(
         "Content-Type": "application/vnd.elasticsearch+json; compatible-with=8"
     }
 )
-
-from elasticsearch import Elasticsearch
-import json
-
-es = Elasticsearch("http://localhost:9200")
-
-def sql_to_es(sql_query: str, size: int = 10) -> list:
-    sql_query = sql_query[0:-1]
-
-    try:
-        # 1. Traduire SQL en DSL
-        translate_resp = es.transport.perform_request(
-            method="POST",
-            path="/_sql/translate",
-            body={"query": sql_query}
-        )
-
-        # 2. Exécuter la requête traduite
-        es_query = translate_resp["query"]
-        index = translate_resp["indices"][0]  # récupère l'index ciblé automatiquement
-
-        search_resp = es.search(index=index, body={"query": es_query}, size=size)
-
-        return [hit["_source"] for hit in search_resp["hits"]["hits"]]
-
-    except Exception as e:
-        return [f"Erreur : {str(e)}"]
-
-from langchain_core.tools import tool
-
-@tool
-def query_es_from_sql(sql_query: str) -> str:
-    """Exécute une requête SQL sur Elasticsearch en la convertissant automatiquement en DSL JSON."""
-    results = sql_to_es(sql_query)
-    return json.dumps(results, indent=2)
-
-class QueryInput(BaseModel):
-    index: str
-    fields: List[str]
-    date_from: str
-    date_to: str
-    question: str
-
 import ast
 
 @tool
@@ -386,21 +211,33 @@ def getMax(input : str):
 
     return np.max(np.array(b))
 
-class MyArgs(BaseModel):
-    index : str
-    fields : List[str]
-    date_from : str
-    date_to : str
+@tool
+def eval_function(input : str):
+    '''Same as eval function in python. Execute eval({input}). input should be a python instruction or python expression. Consider that there is no defined variables'''
 
-tool = Tool.from_function(
-    func=send_query,
-    name="send_querry",
-    description="Tu es un agent spécialisé dans les requêtes ElasticSearch. Utiliser getManFunction pour plus d'informations"
-)
+    return eval(input)
 
-tools = [send_query, getMax]
+tools = [send_query, eval_function]
 tool_node = ToolNode(tools)
 
-# LLM lié aux outils
-llm_with_tools = model.bind_tools(tools)
+import OrderState
+
+WELCOME_MSG = (
+    "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
+)
+
+from Tools_nodes.database_tools.request_traitement import traitement
+
+from langchain_core.messages.ai import AIMessage
+
+def database_agent(state: OrderState) -> OrderState:
+    """The chatbot itself. A wrapper around the model's own chat interface."""
+
+    if state['messages']:
+        print(traitement(state['request_call']).to_string())
+        new_output = {}
+    else:
+        new_output = {"messages" : [AIMessage(content=WELCOME_MSG)]}
+
+    return state | new_output
 

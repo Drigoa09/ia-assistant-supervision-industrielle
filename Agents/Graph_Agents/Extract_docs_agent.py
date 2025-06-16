@@ -3,8 +3,6 @@ from langchain_core.messages.ai import AIMessage
 from OrderState import OrderState
 from model import model
 
-from Tools_nodes.database_node import llm_with_tools
-
 AGENT_GENERATION_SYSINT = (
     '''
 Tu es un agent interprète spécialisé dans l’industrie.
@@ -37,13 +35,16 @@ WELCOME_MSG = (
     "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
 )
 
-from Tools_nodes.database_node import tools
-
 from langgraph.prebuilt import create_react_agent
+
+from Tools_nodes.database_tools.request_format import request
+
+structured_llm = model.with_structured_output(request)
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
+    '''
     if state['messages']:
         agent = create_react_agent(
         model=model,
@@ -58,8 +59,10 @@ def extract_docs_agent(state: OrderState) -> OrderState:
 
     else:
         new_output = {"messages" : [AIMessage(content=WELCOME_MSG)]}
+    '''
+    state['request_call'] = structured_llm.invoke(state['messages'])
 
-    return state | new_output
+    return state | {"messages" : [AIMessage(content = "")]}
 
 def maybe_route_to_database(state: OrderState) -> Literal["query_elasticsearch", "generer_reponse"]:
     """Route to the chatbot, unless it looks like the user is exiting."""

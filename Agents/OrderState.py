@@ -1,6 +1,8 @@
 from typing import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 
+from Tools_nodes.database_tools.request_format import request 
+
 class OrderState(TypedDict):
     """State representing the customer's order conversation."""
 
@@ -10,11 +12,14 @@ class OrderState(TypedDict):
     # them.
     messages: Annotated[list, add_messages]
 
+    request_call : Annotated[request, 'Contient les requêtes']
+
     # The customer's in-progress order.
     order: list[str]
 
     question:list
     tools_to_answer: list
+
 
     # Flag indicating that the order is placed and completed.
     finished: bool
