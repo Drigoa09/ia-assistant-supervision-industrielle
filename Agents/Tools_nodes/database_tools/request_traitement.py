@@ -3,6 +3,12 @@ import requests
 
 import pandas as pd
 
+import os
+
+ES_HOST = os.getenv("ES_HOST")
+USERNAME = os.getenv("ES_USER")
+PASSWORD = os.getenv("ES_PASSWORD")
+
 def build_dataframes(hits, fields):
     dfs = {}
     for es_field in fields:

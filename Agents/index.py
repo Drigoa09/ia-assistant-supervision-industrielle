@@ -12,7 +12,7 @@ from Graph_Agents.Extract_docs_agent import extract_docs_agent, maybe_route_to_d
 from Graph_Agents.Evaluation_docs_agent import evaluation_docs_agent
 from Graph_Agents.generateurReponse import generer_reponse
 from Tools_nodes.message_erreur import afficher_erreur
-from Tools_nodes.database_node import tool_node, database_agent
+from Tools_nodes.database_node import database_agent
 
 from OrderState import OrderState
 
