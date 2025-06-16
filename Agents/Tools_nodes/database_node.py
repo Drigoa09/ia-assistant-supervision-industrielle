@@ -10,8 +10,7 @@ def database_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
     if state['messages']:
-        print(traitement(state['request_call']).to_string())
-        new_output = {}
+        new_output = {"messages" : [AIMessage(content=traitement(state['request_call']).to_string())]}
     else:
         new_output = {"messages" : [AIMessage(content=WELCOME_MSG)]}
 
