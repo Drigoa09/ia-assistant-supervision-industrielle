@@ -1,27 +1,26 @@
+from datetime import datetime
+from time import timezone
 from OrderState import OrderState
 from typing import Literal
 from langgraph.graph import StateGraph, START, END
-
-from langchain_core.messages import HumanMessage
-
+from langchain_core.messages import HumanMessage, AIMessage
+    
 def human_node(state: OrderState) -> OrderState:
-    """Display the last model message to the user, and receive the user's input."""
     last_msg = state["messages"][-1]
-    print("Model:", last_msg.content)
 
-    user_input = input("User: ")
+    #state["messages"][-1] += "Nous sommes " + datetime.now(timezone.utc).isoformat()
 
-    # If it looks like the user is trying to quit, flag the conversation
-    # as over.
-    if user_input in {"q", "quit", "exit", "goodbye"}:
+    if isinstance(last_msg, AIMessage):
+        print("[Modèle]:", last_msg.content)
+        # ❗ Marque la fin pour empêcher la boucle
         state["finished"] = True
-
-    return state | {"messages": [HumanMessage(user_input)]}
+    elif isinstance(last_msg, HumanMessage):
+        print("[Utilisateur]:", last_msg.content) 
+    return state
 
 def maybe_exit_human_node(state: OrderState) -> Literal["extract_docs", "__end__"]:
-    """Route to the chatbot, unless it looks like the user is exiting."""
     if state.get("finished", False):
         return END
-    else:
-        return "extract_docs"
+    return "extract_docs"
+
     

@@ -52,7 +52,7 @@ graph_builder.add_edge("database_agent", "human")
 #graph_builder.add_edge("generer_reponse", "human")
 
 # Start with the chatbot again.
-graph_builder.add_edge(START, "database_agent")
+graph_builder.add_edge(START, "extract_docs")
 
 chat_with_human_graph = graph_builder.compile()
 
@@ -64,8 +64,12 @@ config = {"recursion_limit": 100}
 # Remember that this will loop forever, unless you input `q`, `quit` or one of the
 # other exit terms defined in `human_node`.
 # Uncomment this line to execute the graph:
-state = chat_with_human_graph.invoke({"messages": []}, config)
-
+#state = chat_with_human_graph.invoke({"messages": []}, config)
+if __name__ == "__main__":
+    # Pour tester le graphe manuellement (utile en dev)
+    state = {"messages": []}
+    result = chat_with_human_graph.invoke(state, config={"recursion_limit": 100})
+    print(result)
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
 #  - 'q' to exit.
