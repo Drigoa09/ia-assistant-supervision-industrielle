@@ -19,7 +19,7 @@ class Attribut(Enum):
     CYCLE = "property.operatingTime", DEBUT + '"cycle", "rendement de coupe", "consommation d’électricité", "coût énergétique", ou "puissance"'
     NOM_PROGRAMME_SELECT = "property.nomProgrammeSelect", DEBUT + '"programme" ou "rendement de coupe"'
     TEMPS_DE_COUPE = "property.cuttingTime", DEBUT + '"coupe"'
-    NOM_OUTIL_BROCHE = "property.nomOutilBroche", DEBUT + '"coupe" ou "outil"'
+    NOM_OUTIL_BROCHE = "property.activeToolNumber", DEBUT + '"coupe" ou "outil"'
     SUM_CYCLE_TIME_NET = "property.sumCycleTimeNet", DEBUT + '"mise sous tension" ou "allumée"'
     POWER_X = "property.power_X", DEBUT + '"outil"'
     POWER_Y = "property.power_Y", DEBUT + '"outil"'
@@ -48,18 +48,23 @@ PERIODES = '''
 MACHINES = '''
 🗂️ **Sélection de la machine :**
 - Par défaut → `logstash-huron-k3x8f-202*`
-- Si la question mentionne **"sigscan"**, **"bac"**, ou **"géolocalisation"** → `Sigscan`
+- Si la question mentionne **"sigscan"**, **"bac"**, ou **"géolocalisation"** → `sigscan`
 '''
 
 VARIABLES = '''
 - Si la question contient **"cycle"** ou **"programme"** → ajouter `property.operatingTime`, `property.nomProgrammeSelect`
-- Si elle contient **"coupe"** ou **"outil"** → ajouter `property.cuttingTime`, `property.nomOutilBroche`
+- Si elle contient **"coupe"** ou **"outil"** → ajouter `property.cuttingTime`, `property.activeToolNumber`
 - Si elle contient **"mise sous tension"** ou **"allumée"** → ajouter `property.sumCycleTimeNet`
 - Si elle contient **"rendement de coupe"** → ajouter `property.operatingTime`, `property.cuttingTime`
 - Si elle contient **"consommation d’électricité"**, **"coût énergétique"**, ou **"puissance"** → ajouter `property.operatingTime`, `property.power_X`, `property.power_Y`, `property.power_Z`, `property.powerSpindle`, `property.power_A`, `property.power_C`
 - Si elle contient **"charge de la broche"** ou **"couple"** → ajouter `property.spindlLoad`
 - Si elle contient **"température"** ou **"chaleur"** → ajouter `property.tempBrocheExt`
 - Si elle contient **"alarme"** ou **"défaut"** → ajouter `property.numDerniereAlarme`
+
+Variables de préférence en principale requete :
+- property.operatingTime
+- property.cuttingTime
+
 '''
 
 class request(BaseModel):
@@ -74,7 +79,7 @@ class request(BaseModel):
 
     periode_requete : periode = Field(description="Période associée à la requête" + PERIODES)
 
-    variable_principale_requete : variable = Field(description = "Variable principale dont les variables contexte vont se baser. Représente l'abscisse dans un graphique" + VARIABLES)
+    variable_principale_requete : variable = Field(description = "Variable principale dont les variables contexte vont se baser. Représente l'abscisse dans un graphique. Mettre de préférence une variable temporelle ici." + VARIABLES)
     variables_contextes_requete : List[variable] = Field(description = "Variables contextes associées à la variable principale. Représente les ordonnées dans un graphique" + VARIABLES)
 
     resultat_attendu : List[str] = Field("Liste des résultats attendus")

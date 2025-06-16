@@ -1,5 +1,6 @@
 from Tools_nodes.database_tools.request_format import request
 import requests
+import urllib3
 
 import pandas as pd
 
@@ -8,6 +9,8 @@ import os
 ES_HOST = os.getenv("ES_HOST")
 USERNAME = os.getenv("ES_USER")
 PASSWORD = os.getenv("ES_PASSWORD")
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def build_dataframes(hits, fields):
     dfs = {}
@@ -23,7 +26,7 @@ def build_dataframes(hits, fields):
     return dfs
 
 # Extraire les intervalles de cycle
-def extraire_intervalles(df_source, df_contexte, variable_contexte, seuil_pause=5):
+def extraire_intervalles(df_source, df_contexte, variable_contexte, nom_second, seuil_pause=5):
     df_source = df_source.copy()
     df_source["time_diff"] = df_source["timestamp"].diff().dt.total_seconds()
     split_indices = df_source.index[df_source["time_diff"] > seuil_pause].tolist()
@@ -40,7 +43,7 @@ def extraire_intervalles(df_source, df_contexte, variable_contexte, seuil_pause=
             "start": start,
             "end": end,
             "temps(s)": round(duration, 1),
-            "programme": programme
+            nom_second: programme
         }
 
     return periodes
@@ -51,7 +54,7 @@ def traitement(request : request):
 
     date_from = request.periode_requete.date_from
     date_to = request.periode_requete.date_to
-    fields = [request.variable_principale_requete.nom.value, request.variables_contextes_requete[0].nom.value] #TODO
+    fields = [request.variable_principale_requete.nom.value] + [variable_contexte_requete.nom.value for variable_contexte_requete in request.variables_contextes_requete]
 
     index = request.machine_request.value
     
@@ -109,7 +112,7 @@ def traitement(request : request):
     df_programme = dataframes[request.variables_contextes_requete[0].nom.value]
 
     # Découpage des cycles en intervalles
-    periodes = extraire_intervalles(df_tempsCycle, df_programme, request.variables_contextes_requete[0].nom.value)
+    periodes = extraire_intervalles(df_tempsCycle, df_programme, request.variables_contextes_requete[0].nom.value, request.variables_contextes_requete[0].alias)
 
     # Affichage final
     df_final = pd.DataFrame.from_dict(periodes, orient="index")

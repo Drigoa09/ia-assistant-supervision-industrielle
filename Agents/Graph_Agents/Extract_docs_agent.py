@@ -44,25 +44,11 @@ structured_llm = model.with_structured_output(request)
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
-    '''
-    if state['messages']:
-        agent = create_react_agent(
-        model=model,
-        tools=tools,
-        prompt=AGENT_GENERATION_SYSINT,
-        debug = True
-    )
-
-        new_output = agent.invoke(
-            state
-        )
-
-    else:
-        new_output = {"messages" : [AIMessage(content=WELCOME_MSG)]}
-    '''
     state['request_call'] = structured_llm.invoke(state['messages'])
 
-    return state | {"messages" : [AIMessage(content = "")]}
+    print(state['request_call'])
+
+    return state
 
 def maybe_route_to_database(state: OrderState) -> Literal["query_elasticsearch", "generer_reponse"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
