@@ -1,7 +1,7 @@
 from typing import Literal
 from langchain_core.messages.ai import AIMessage
 from OrderState import OrderState
-from model import model
+from model import model_codestral
 
 AGENT_GENERATION_SYSINT = (
     '''
@@ -14,7 +14,7 @@ from langgraph.prebuilt import create_react_agent
 
 from Tools_nodes.treatment_tools.traitement_format import Traitement_Format
 
-structured_llm = model.with_structured_output(Traitement_Format)
+structured_llm = model_codestral.with_structured_output(Traitement_Format)
 
 def treatment_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
@@ -30,7 +30,7 @@ def treatment_agent(state: OrderState) -> OrderState:
         for colonne in state['dataFrames_columns']:
             AGENT_GENERATION_SYSINT += colonne
 
-        state['request_call'] = structured_llm.invoke([AGENT_GENERATION_SYSINT + state['traitement']])
+        state['request_call'] = structured_llm.invoke([AGENT_GENERATION_SYSINT, state['traitement']])
 
         print(state['request_call'])
 

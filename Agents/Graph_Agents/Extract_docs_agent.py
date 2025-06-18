@@ -1,7 +1,7 @@
 from typing import Literal
 from langchain_core.messages.ai import AIMessage
 from OrderState import OrderState
-from model import model
+from model import model_codestral
 
 AGENT_GENERATION_SYSINT = (
     '''
@@ -14,7 +14,7 @@ from langgraph.prebuilt import create_react_agent
 
 from Tools_nodes.database_tools.request_format import request
 
-structured_llm = model.with_structured_output(request)
+structured_llm = model_codestral.with_structured_output(request)
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""

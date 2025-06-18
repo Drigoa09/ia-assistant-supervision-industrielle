@@ -1,15 +1,13 @@
 from typing import List
 from pydantic import BaseModel, Field
 
-from model import model
-
 from enum import Enum
 from typing import Optional, List
 
 from typing import Literal
 from langchain_core.messages import AIMessage, HumanMessage
 from OrderState import OrderState
-from model import model
+from model import model_codestral
 
 AGENT_JOB = '''
 Tu es chargé de séparer une question pour en extraire l'information cherchée et le traitement à effectuer
@@ -31,7 +29,7 @@ class Separation(BaseModel):
     INFORMATION_CHERCHER : str = Field(description = "Information recherchée dans la base de donnée. Exprimé sous forme d'un ordre")
     TRAITEMENT : Optional[str] = Field(description = "Traitement fait sur les informations de la base de donnée déduit à partir de la question. Exprimé sous forme d'un ordre") 
 
-structured_llm = model.with_structured_output(Separation)
+structured_llm = model_codestral.with_structured_output(Separation)
 
 def createur_tache(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""

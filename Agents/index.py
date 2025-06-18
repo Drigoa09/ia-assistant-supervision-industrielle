@@ -6,13 +6,9 @@ load_dotenv()
 
 from langgraph.graph import StateGraph, START, MessagesState
 
-from Graph_Agents.AgentGeneration import chatbot_with_welcome_msg, maybe_route_to_extract_docs
 from Graph_Agents.human_node import human_node, maybe_exit_human_node
 from Graph_Agents.CreateurTache import createur_tache
-from Graph_Agents.Extract_docs_agent import extract_docs_agent, maybe_route_to_database
-from Graph_Agents.Evaluation_docs_agent import evaluation_docs_agent
-from Graph_Agents.generateurReponse import generer_reponse
-from Tools_nodes.message_erreur import afficher_erreur
+from Graph_Agents.Extract_docs_agent import extract_docs_agent
 from Tools_nodes.database_node import database_agent
 from Graph_Agents.treatment_agent import treatment_agent
 from Tools_nodes.treatment_node import treatment_node
@@ -78,7 +74,6 @@ if __name__ == "__main__":
     # Pour tester le graphe manuellement (utile en dev)
     state = {"messages": []}
     result = chat_with_human_graph.invoke(state, config={"recursion_limit": 100})
-    print(result)
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
 #  - 'q' to exit.
