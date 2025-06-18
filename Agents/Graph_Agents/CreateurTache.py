@@ -36,6 +36,10 @@ Exemple :
 Trouver les programmes en fonction de leur cycle associé.
 
 INFORMATION_CHERCHER='Trouver les programmes et les cycles' TRAITEMENT=['Exprimer les programmes en fonction de leur cycle associé']
+
+Trouver les outils en fonction de leur temps de coupe associé.
+
+INFORMATION_CHERCHER='Trouver les outils et les temps de coupe' TRAITEMENT=['Exprimer les outils en fonction de leur temps de coupe associé']
 '''
 
 class Separation(BaseModel):

@@ -13,7 +13,6 @@ USERNAME = os.getenv("ES_USER")
 PASSWORD = os.getenv("ES_PASSWORD")
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Suppress specific UserWarning message from Pydantic
 warnings.filterwarnings(
