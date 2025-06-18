@@ -14,12 +14,13 @@ from model import model
 AGENT_JOB = '''
 Tu es chargé de séparer une question pour en extraire l'information cherchée et le traitement à effectuer
 sur cette information. Exprime l'information cherchée et le traitement sous la forme d'un ordre.
+Il est possible qu'un traitement ne soit pas associé à une question. Il faut toujours préciser l'attribut TRAITEMENT
 
 L'information cherchée peut être :
 - Trouvée entre deux dates précises.
 Les traitements possibles sont :
 - Trouver les occurences des éléments parmi l'information cherchée
-- Rien faire si aucun traitement n'est demandé
+
 '''
 
 class Separation(BaseModel):
@@ -28,7 +29,7 @@ class Separation(BaseModel):
     """
 
     INFORMATION_CHERCHER : str = Field(description = "Information recherchée dans la base de donnée. Exprimé sous forme d'un ordre")
-    TRAITEMENT : Optional[str] = Field(description = "Traitement fait sur les informations de la base de donnée déduit à partir de la question. Rien ajouter de plus. Exprimé sous forme d'un ordre") 
+    TRAITEMENT : Optional[str] = Field(description = "Traitement fait sur les informations de la base de donnée déduit à partir de la question. Exprimé sous forme d'un ordre") 
 
 structured_llm = model.with_structured_output(Separation)
 

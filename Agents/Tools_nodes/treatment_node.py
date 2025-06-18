@@ -21,21 +21,27 @@ def plus_occurent(dataFrames, args):
 def treatment_node(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
-    fonctions_appelees = state['request_call'].fonctions_appelees
+    if state['traitement'] != None:
 
-    new_dataFrames = []
+        fonctions_appelees = state['request_call'].fonctions_appelees
 
-    for fonction_appelee in fonctions_appelees:
+        new_dataFrames = []
+
+        for fonction_appelee in fonctions_appelees:
+            
+            if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
+
+                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
+
+        message = ""
+
+        for (dataFrame_index) in new_dataFrames:
+            message += dataFrame_index.to_frame().to_html()
+
+        new_output = {"messages" : [AIMessage(content=message)]}
+
+        return state | new_output
+    
+    else:
         
-        if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
-
-            new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
-
-    message = ""
-
-    for (dataFrame_index) in new_dataFrames:
-        message += dataFrame_index.to_html()
-
-    new_output = {"messages" : [AIMessage(content=message)]}
-
-    return state | new_output
+        return state
