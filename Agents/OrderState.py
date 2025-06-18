@@ -1,4 +1,4 @@
-from typing import Annotated, TypedDict
+from typing import Annotated, List, TypedDict
 from langgraph.graph.message import add_messages
 
 from Tools_nodes.database_tools.request_format import request 
@@ -17,8 +17,11 @@ class OrderState(TypedDict):
 
     #Indique l'information cherchée
     information_chercher : str
-    #Indique le traitement à effectuer sur l'information cherchée
+    #Indique les traitements à effectuer sur l'information cherchée
+    traitements : List[str]
+    #Indique le traitement actuel sur l'information cherchée
     traitement : str
+    i : int
 
     #Requête obtenue pour en envoyer une à la base de donnée
     request_call : Annotated[request, 'Contient les requêtes']

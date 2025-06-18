@@ -5,6 +5,10 @@ from langchain_mistralai import ChatMistralAI
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 #model = ChatOllama(model="mistral", temperature = 0)
 
 os.environ["MISTRAL_API_KEY"] = os.getenv("MISTRAL_API_KEY")

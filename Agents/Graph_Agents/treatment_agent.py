@@ -28,7 +28,7 @@ def treatment_agent(state: OrderState) -> OrderState:
         '''
 
         for colonne in state['dataFrames_columns']:
-            AGENT_GENERATION_SYSINT += colonne
+            AGENT_GENERATION_SYSINT += colonne + ", "
 
         state['request_call'] = structured_llm.invoke([AGENT_GENERATION_SYSINT, state['traitement']])
 

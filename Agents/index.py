@@ -1,8 +1,4 @@
-from dotenv import load_dotenv
-
 import os
-
-load_dotenv()
 
 from langgraph.graph import StateGraph, START, MessagesState
 
@@ -10,6 +6,7 @@ from Graph_Agents.human_node import human_node, maybe_exit_human_node
 from Graph_Agents.CreateurTache import createur_tache
 from Graph_Agents.Extract_docs_agent import extract_docs_agent
 from Tools_nodes.database_node import database_agent
+from Tools_nodes.continuer_node import continuer_node, maybe_route_to_treatment
 from Graph_Agents.treatment_agent import treatment_agent
 from Tools_nodes.treatment_node import treatment_node
 
@@ -32,6 +29,7 @@ graph_builder.add_node("createurTache", createur_tache)
 graph_builder.add_node("extract_docs", extract_docs_agent)
 graph_builder.add_node("database_agent", database_agent)
 graph_builder.add_node("treatment_agent", treatment_agent)
+graph_builder.add_node("continuer_node", continuer_node)
 graph_builder.add_node("treatment_node", treatment_node)
 #graph_builder.add_node("query_elasticsearch", tool_node)
 #graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
@@ -43,6 +41,7 @@ graph_builder.add_node("treatment_node", treatment_node)
 #graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
 
 graph_builder.add_conditional_edges("human", maybe_exit_human_node)
+graph_builder.add_conditional_edges("continuer_node", maybe_route_to_treatment)
 
 #graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
 #graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
@@ -51,9 +50,9 @@ graph_builder.add_conditional_edges("human", maybe_exit_human_node)
 #graph_builder.add_edge("evaluation_doc_agent", "human")
 graph_builder.add_edge("createurTache", "extract_docs")
 graph_builder.add_edge("extract_docs", "database_agent")
-graph_builder.add_edge("database_agent", "treatment_agent")
+graph_builder.add_edge("database_agent", "continuer_node")
 graph_builder.add_edge("treatment_agent", "treatment_node")
-graph_builder.add_edge("treatment_node", "human")
+graph_builder.add_edge("treatment_node", "continuer_node")
 #graph_builder.add_edge("generer_reponse", "human")
 
 # Start with the chatbot again.

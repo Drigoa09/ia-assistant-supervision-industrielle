@@ -68,18 +68,8 @@ def traitement(request : request):
     date_from = request.periode_requete.date_from
     date_to = request.periode_requete.date_to
 
-    if hasattr(request, 'variable_x_requete') and request.variable_x_requete != None:
-        fields = [request.variable_x_requete.nom.value]
-        fields_alias = [request.variable_x_requete.alias]
-    else:
-        fields = []
-        fields_alias = []
-
-    fields_contexte = [variables_y_requete.nom.value for variables_y_requete in request.variables_y_requete]
-    fields_alias_contexte = [variables_y_requete.alias for variables_y_requete in request.variables_y_requete]
-    
-    fields += fields_contexte
-    fields_alias += fields_alias_contexte
+    fields = [variables_requete.nom.value for variables_requete in request.variables_requete]
+    fields_alias = [variables_requete.alias for variables_requete in request.variables_requete]
 
     index = request.machine_request.value
     
@@ -132,6 +122,7 @@ def traitement(request : request):
     
     dataframes = build_dataframes(all_hits, fields, fields_alias)
 
+    '''
     if hasattr(request, "variable_x_requete") and request.variable_x_requete != None and fields_contexte != []:
 
 
@@ -154,5 +145,6 @@ def traitement(request : request):
         df_final["end"] = pd.to_datetime(df_final["end"]).dt.strftime('%Y-%m-%d %H:%M:%S')
 
         dataframes = {0 : df_final}
+    '''
 
-    return (dataframes, fields_alias_contexte)
+    return (dataframes, fields_alias)

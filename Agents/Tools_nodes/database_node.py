@@ -1,3 +1,4 @@
+from typing import Literal
 from Tools_nodes.database_tools.request_traitement import traitement
 from langchain_core.messages.ai import AIMessage
 import OrderState
@@ -24,6 +25,8 @@ def database_agent(state: OrderState) -> OrderState:
         state['dataFrames_columns'] += fields_alias_contexte
 
     new_output = {"messages" : [AIMessage(content=message)]}
+
+    state['i'] = -1
 
     return state | new_output
 
