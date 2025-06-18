@@ -1,6 +1,8 @@
 from Tools_nodes.database_tools.request_format import request, Attribut_Principal
 import requests
 import urllib3
+import warnings
+
 
 import pandas as pd
 
@@ -11,6 +13,14 @@ USERNAME = os.getenv("ES_USER")
 PASSWORD = os.getenv("ES_PASSWORD")
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Suppress specific UserWarning message from Pydantic
+warnings.filterwarnings(
+    "ignore",
+    message=r"Pydantic serializer warnings:.*PydanticSerializationUnexpectedValue.*",
+    category=UserWarning,
+)
 
 def build_dataframes(hits, fields, fields_alias):
     dfs = {}
@@ -28,38 +38,6 @@ def build_dataframes(hits, fields, fields_alias):
 
         i += 1
     return dfs
-
-# Extraire les intervalles de cycle
-def extraire_intervalles(df_source, df_contextes, variables_contextes, seuil_pause=5):
-    df_source = df_source.copy()
-    df_source["time_diff"] = df_source["timestamp"].diff().dt.total_seconds()
-    split_indices = df_source.index[df_source["time_diff"] > seuil_pause].tolist()
-    sub_tables = [df_source.iloc[start:end] for start, end in zip([0]+split_indices, split_indices+[len(df_source)]) if end - start > 1]
-    df_source.drop(columns="time_diff", inplace=True)
-
-    periodes = {}
-    for i, table in enumerate(sub_tables, 1):
-        start, end = table["timestamp"].iloc[0], table["timestamp"].iloc[-1]
-        duration = (end - start).total_seconds()
-        
-        periodes[f"interval_{i}"] = {
-            "start": start,
-            "end": end,
-            "temps(s)": round(duration, 1)
-        }
-
-        for j in range(len(df_contextes)):
-
-            df_contexte = df_contextes[j]
-            nom_variable = variables_contextes[j]
-
-            matching = df_contexte[df_contexte["timestamp"] < start]
-            
-            programme = str(matching.iloc[-1][nom_variable]) if not matching.empty else None
-            periodes[f"interval_{i}"][nom_variable] = programme
-            
-
-    return periodes
 
 def traitement(request : request):
     all_hits = []
@@ -121,30 +99,5 @@ def traitement(request : request):
         search_after = hits[-1]["sort"][0]
     
     dataframes = build_dataframes(all_hits, fields, fields_alias)
-
-    '''
-    if hasattr(request, "variable_x_requete") and request.variable_x_requete != None and fields_contexte != []:
-
-
-        df_tempsCycle = dataframes[request.variable_x_requete.nom.value]
-
-        if df_tempsCycle is None or df_tempsCycle.empty:
-            return "Aucun cycle détecté."
-        
-        dfs_programmes = []
-
-        for field_contexte in fields_contexte:
-            dfs_programmes.append(dataframes[field_contexte])
-
-        # Découpage des cycles en intervalles
-        periodes = extraire_intervalles(df_tempsCycle, dfs_programmes, fields_alias_contexte)
-
-        # Affichage final
-        df_final = pd.DataFrame.from_dict(periodes, orient="index")
-        df_final["start"] = pd.to_datetime(df_final["start"]).dt.strftime('%Y-%m-%d %H:%M:%S')
-        df_final["end"] = pd.to_datetime(df_final["end"]).dt.strftime('%Y-%m-%d %H:%M:%S')
-
-        dataframes = {0 : df_final}
-    '''
 
     return (dataframes, fields_alias)

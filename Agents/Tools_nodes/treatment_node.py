@@ -4,7 +4,7 @@ from Tools_nodes.treatment_tools.traitement_format import fonctions_existantes
 
 import OrderState
 
-def plus_occurent(dataFrames, args):
+def plus_occurent(dataFrames, args, args_restants):
 
     new_dataFrames = []
 
@@ -13,6 +13,9 @@ def plus_occurent(dataFrames, args):
             if arg in dataFrame.columns:
                 new_dataFrames.append(dataFrame[arg].value_counts().to_frame())
                 break
+
+    for arg in args:
+        args_restants.append(arg)
 
     return new_dataFrames
 
@@ -50,7 +53,7 @@ def extraire_intervalles(df_source, df_contextes, variables_contextes, seuil_pau
 
 import pandas as pd
     
-def exprimer_information_en_fonction_autre(dataFrames, args):
+def exprimer_information_en_fonction_autre(dataFrames, args, args_restants):
 
     new_dataFrames = []
 
@@ -59,6 +62,9 @@ def exprimer_information_en_fonction_autre(dataFrames, args):
     for dataFrame in dataFrames:
         if arg0 in dataFrame.columns:
             df_tempsCycle = dataFrame
+
+    for arg in args[1:]:
+        args_restants.append(arg)
 
     if df_tempsCycle is None or df_tempsCycle.empty:
         return "Aucun cycle détecté."
@@ -90,19 +96,22 @@ def treatment_node(state: OrderState) -> OrderState:
 
         fonctions_appelees = state['request_call'].fonctions_appelees
 
+
+        args_restants = []
         new_dataFrames = []
 
         for fonction_appelee in fonctions_appelees:
             
             if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
-
-                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
+                
+                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args, args_restants)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.INFORMATION_EN_FONCTION_AUTRE:
 
-                new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args)
+                new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args, args_restants)
 
         state['dataFrames'] = new_dataFrames
+        state['dataFrames_columns'] = args_restants
 
         message = ""
 
