@@ -12,15 +12,22 @@ class OrderState(TypedDict):
     # them.
     messages: Annotated[list, add_messages]
 
+    #Question posée par l'utilisateur
+    question : str
+
+    #Indique l'information cherchée
+    information_chercher : str
+    #Indique le traitement à effectuer sur l'information cherchée
+    traitement : str
+
+    #Requête obtenue pour en envoyer une à la base de donnée
     request_call : Annotated[request, 'Contient les requêtes']
 
-    # The customer's in-progress order.
-    order: list[str]
-
-    question:list
-    tools_to_answer: list
-
+    #DataFrame obtenu et traité à partir de la baes de donnée et dont le contenu
+    #est envoyé à l'utilisateur
+    dataFrames : list
+    #Contient les colonnes de la dataFrame
+    dataFrames_columns : list[str]
 
     # Flag indicating that the order is placed and completed.
     finished: bool
-    Trois : bool
