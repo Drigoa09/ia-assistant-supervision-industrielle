@@ -22,7 +22,7 @@ Les informations qu'il est possible de chercher sont :
     - Les outils
 
 Les traitements possibles sont :
-- Trouver les occurences des éléments parmi l'information cherchée
+- Trouver les occurences des éléments parmi l'information cherchée et les classer par ordre décroissant
 - Exprimer une information en fonction d'une autre information
 - Calculer la somme d'une information
 - Diviser deux valeurs
@@ -37,9 +37,13 @@ Trouver les programmes en fonction de leur cycle associé.
 
 INFORMATION_CHERCHER='Trouver les programmes et les cycles' TRAITEMENT=['Exprimer les programmes en fonction de leur cycle associé']
 
-Trouver les outils en fonction de leur temps de coupe associé.
+Trouver les outils en fonction de leur temps de coupe.
 
 INFORMATION_CHERCHER='Trouver les outils et les temps de coupe' TRAITEMENT=['Exprimer les outils en fonction de leur temps de coupe associé']
+
+Trouver les programmes en fonction de leur cycle associé. Puis cherche le programme le plus utilisé.
+
+INFORMATION_CHERCHER='Trouver les programmes et les cycles' TRAITEMENT=['Exprimer les programmes en fonction de leur cycle associé', 'Chercher le programme le plus utilisé']
 '''
 
 class Separation(BaseModel):
