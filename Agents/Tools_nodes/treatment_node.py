@@ -19,7 +19,7 @@ def filtrer(dataFrames, args, args_restants, roles, args_role_restants):
             cycles_coupe = dataFrame
 
     cycles_programme_cible = [(v["start"], v["end"]) for v in cycles_fonctionnement.to_dict(orient = "index").values() 
-                              if v[arg1] == programme_cible
+                              if str(v[arg1]) == programme_cible
                               ]
 
     #  Filtrer les cycles de coupe inclus dans les cycles du programme cible
@@ -28,7 +28,7 @@ def filtrer(dataFrames, args, args_restants, roles, args_role_restants):
         start_coupe = v["start"]
         outil = v[arg2]
         for start_prog, end_prog in cycles_programme_cible:
-            if start_prog <= start_coupe <= end_prog and outil is not None:
+            if (start_prog <= start_coupe <= end_prog or start_coupe <= start_prog <= v["end"]) and outil is not None:
                 outils_utilisés.add(outil)
                 break
 

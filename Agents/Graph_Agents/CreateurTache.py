@@ -51,6 +51,11 @@ Exemple 4 :
 Trouver les outils utilisés dans le programme _N_OP20_AIR_SPF
 
 INFORMATION_CHERCHER = 'Trouver les programmes, les cycles, les outils et les temps de coupe' TRAITEMENT = ['Exprimer les programmes en fonction de leur cycle associé et exprimer les outils en fonction de leur temps de coupe associé', 'Filtrer les outils en acceptant que ceux du programme _N_OP20_AIR_SPF']
+
+Exemple 5 :
+Trouver les programmes contenant l'outil 130
+
+INFORMATION_CHERCHER = 'Trouver les programmes, les cycles, les outils et les temps de coupe' TRAITEMENT = ['Exprimer les programmes en fonction de leur cycle associé et exprimer les outils en fonction de leur temps de coupe associé', 'Filtrer les programmes en acceptant que ceux contenant l'outil 130']
 '''
 
 class Separation(BaseModel):
