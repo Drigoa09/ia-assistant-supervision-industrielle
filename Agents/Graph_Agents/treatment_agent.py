@@ -24,11 +24,12 @@ def treatment_agent(state: OrderState) -> OrderState:
         Tu es un agent interprète spécialisé dans l’industrie.
 
         Tu essaies de répondre aux questions avec les outils qui te sont donnés, pas à pas.
-        Tu as accès aux clés de dataFrame : 
+        Tu as accès aux clés de dataFrame : \n
         '''
-
-        for colonne in state['dataFrames_columns']:
-            AGENT_GENERATION_SYSINT += colonne + ", "
+        n = len(state['dataFrames_columns'])
+        
+        for i in range(n):
+            AGENT_GENERATION_SYSINT +=  state['dataFrames_columns'][i] + " : " + state['dataFrames_role'][i] + "\n"
 
         state['request_call'] = structured_llm.invoke([AGENT_GENERATION_SYSINT, state['traitement']])
 

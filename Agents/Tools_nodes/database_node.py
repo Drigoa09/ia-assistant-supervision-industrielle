@@ -14,15 +14,17 @@ def database_agent(state: OrderState) -> OrderState:
 
     state['dataFrames'] = []
     state['dataFrames_columns'] = []
+    state['dataFrames_role'] = []
     
     for element_cherche in state['request_call'].elements_cherches_request:
-        (dataframes, fields_alias_contexte) = traitement(element_cherche)
+        (dataframes, fields_alias_contexte, fields_role) = traitement(element_cherche)
 
         for (dataFrame_index) in dataframes:
             state['dataFrames'].append(dataframes[dataFrame_index])
             message += dataframes[dataFrame_index].to_html()
 
         state['dataFrames_columns'] += fields_alias_contexte
+        state['dataFrames_role'] += fields_role
 
     new_output = {"messages" : [AIMessage(content=message)]}
 

@@ -36,7 +36,6 @@ class Attribut(Enum):
 
 class Machine(Enum):
     Huron_KXFive = "logstash-huron-k3x8f-202*"
-    SigScan = "sigscan"
 
 class variable_principale(BaseModel):
     nom : Attribut_Principal = Field(description = "Nom de l'attribut de la variable principale parmi les énumérations")
@@ -46,7 +45,7 @@ class variable_principale(BaseModel):
 class variable(BaseModel):
     nom : Attribut = Field(description = "Nom de l'attribut de la variable parmi les énumérations")
     alias : str = Field(description = "Nom de la variable")
-    role : str = Field(description = "Role de la variable")
+    role : str = Field(description = "Role de la variable en une phrase complète.")
 
 PERIODES = '''
 🕓 **Période :**
@@ -56,7 +55,6 @@ PERIODES = '''
 MACHINES = '''
 🗂️ **Sélection de la machine :**
 - Par défaut → `logstash-huron-k3x8f-202*`
-- Si la question mentionne **"sigscan"**, **"bac"**, ou **"géolocalisation"** → `sigscan`
 '''
 
 VARIABLES = '''

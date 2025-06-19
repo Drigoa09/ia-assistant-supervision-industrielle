@@ -31,6 +31,7 @@ class OrderState(TypedDict):
     dataFrames : list
     #Contient les colonnes de la dataFrame
     dataFrames_columns : list[str]
+    dataFrames_role : list[str]
 
     # Flag indicating that the order is placed and completed.
     finished: bool

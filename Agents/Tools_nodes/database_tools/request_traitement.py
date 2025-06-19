@@ -47,6 +47,7 @@ def traitement(request : request):
 
     fields = [variables_requete.nom.value for variables_requete in request.variables_requete]
     fields_alias = [variables_requete.alias for variables_requete in request.variables_requete]
+    fields_role = [variables_requete.role for variables_requete in request.variables_requete]
 
     index = request.machine_request.value
     
@@ -99,4 +100,4 @@ def traitement(request : request):
     
     dataframes = build_dataframes(all_hits, fields, fields_alias)
 
-    return (dataframes, fields_alias)
+    return (dataframes, fields_alias, fields_role)
