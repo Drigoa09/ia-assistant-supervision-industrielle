@@ -135,11 +135,17 @@ def exprimer_information_en_fonction_autre(dataFrames, args, args_restants):
 
 def treatment_node(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
+    print("📦 State reçu dans treatment_node:", list(state.keys()))
+    print("🔍 traitement_format vaut:", state.get("traitement_format"))
 
     if state['traitement'] != None:
 
-        fonctions_appelees = state['request_call'].fonctions_appelees
+        # 🔁 Tentative de récupération sécurisée
+        traitement_format = state.get("traitement_format")
+        if traitement_format is None:
+            raise ValueError("❌ traitement_format est totalement absent, même en fallback ! Clés disponibles : " + str(state.keys()))
 
+        fonctions_appelees = traitement_format.fonctions_appelees
 
         args_restants = []
         new_dataFrames = []
@@ -171,9 +177,12 @@ def treatment_node(state: OrderState) -> OrderState:
         for (dataFrame_index) in new_dataFrames:
             message += dataFrame_index.dataFrame.to_html()
 
-        new_output = {"messages" : [AIMessage(content=message)]}
+        #new_output = {"messages" : [AIMessage(content=message)]}
 
-        return state | new_output
+        return {
+                **state,
+                "messages": state["messages"] + [AIMessage(content=message)]
+            }
     
     else:
         

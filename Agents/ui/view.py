@@ -1,6 +1,11 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy
 import markdown2
-
+from ui.CollapsibleBox import CollapsibleBox 
+from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtGui import QMovie
+import os
+from PySide6.QtCore import Slot
+from langchain_core.messages import AIMessage
 
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
@@ -27,7 +32,39 @@ class ChatWindow(QWidget):
         # Bouton pour quitter l'application
         self.quit_button = QPushButton("Quitter")
         self.quit_button.setToolTip("Quitter l'application")
+        # --- Chargement GIF + Texte ---
+        gif_path = os.path.join(os.path.dirname(__file__), "assets", "thinking-ezgif.com-crop.gif")
+        self.loading_movie = QMovie(gif_path)
+        self.loading_movie.setScaledSize(QSize(24, 24))
 
+        self.loading_gif_label = QLabel()
+        self.loading_gif_label.setMovie(self.loading_movie)
+        self.loading_gif_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.loading_gif_label.setStyleSheet("margin: 0px; padding: 0px;")
+
+        self.loading_text_label = QLabel("Réflexion en cours…")
+        self.loading_text_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.loading_text_label.setStyleSheet("margin: 0px; padding: 0px;")
+
+        # 📦 Layout horizontal avec un spacer à droite pour pousser les widgets à gauche
+        self.loading_layout = QHBoxLayout()
+        self.loading_layout.setContentsMargins(0, 0, 0, 0)
+        self.loading_layout.setSpacing(0)
+        self.loading_layout.addWidget(self.loading_text_label)
+        self.loading_layout.addWidget(self.loading_gif_label)
+        
+
+        # 🧱 Ajout du spacer à droite
+        spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.loading_layout.addItem(spacer)
+
+        self.loading_widget = QWidget()
+        self.loading_widget.setLayout(self.loading_layout)
+        self.loading_widget.setVisible(False)  # Caché par défaut
+
+        # N'oublie pas de l’ajouter au layout principal
+        self.layout.addWidget(self.loading_widget)
+        
         # Ajout du champ de saisie et du bouton au layout horizontal
         input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.send_button)
@@ -37,21 +74,63 @@ class ChatWindow(QWidget):
         self.send_button.clicked.connect(self.controller.on_send_clicked) # Connexion du bouton d'envoi à la méthode du contrôleur
         self.input_field.returnPressed.connect(self.controller.on_send_clicked) # Connexion de la touche "Entrée" à la méthode du contrôleur
         self.quit_button.clicked.connect(QApplication.instance().quit) # Connexion du bouton de quitter à l'application
+        self.summary_box = None  # 🔥 pour mémoriser la box actuelle
+        self.append_collapsible_summary("<b>Résumé de test</b>")
+        self.show_loading()
+        QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
+
+
     # Fonction pour ajouter un message à la zone d'affichage du chat
     def append_message(self, sender, content):
         self.chat_display.append(f"<b>{sender}:</b> {content}")
     # Fonction pour afficher un message de chargement
     def show_loading(self):
-        self.append_message("Assistant", "... en train de réfléchir 🤔")
-        self.chat_display.repaint()
+        self.loading_widget.setVisible(True)
+        self.loading_movie.start()
         QApplication.processEvents()
-        self.input_field.clear()
-    # Fonction pour masquer le message de chargement
+    # Fonction pour cacher le message de chargement
     def hide_loading(self):
-        self.chat_display.repaint()
+        self.loading_movie.stop()
+        self.loading_widget.setVisible(False)
         QApplication.processEvents()
-        self.input_field.clear()
     # Fonction pour afficher la réponse de l'assistant
     def display_response(self, markdown_text):
         html = markdown2.markdown(markdown_text)
         self.chat_display.append(f"<b>Assistant:</b><br>{html}")
+    # Fonction pour le résumé 
+    def append_collapsible_summary(self, html_summary: str):
+        if self.summary_box is None:
+            self.summary_box = CollapsibleBox("📊 Résumé")
+            label = QLabel()
+            label.setTextFormat(Qt.TextFormat.RichText)
+            label.setWordWrap(True)
+            self.summary_box.setContent(label)
+            self.layout.insertWidget(self.layout.count() - 2, self.summary_box)
+        else:
+            label = self.summary_box.content_area.layout().itemAt(0).widget()
+        
+        label.setText(html_summary)
+        self.summary_box.content_area.setVisible(True)
+        self.summary_box.toggle_button.setChecked(True)
+        self.summary_box.toggle_button.setArrowType(Qt.DownArrow)
+    def set_controller(self, controller):
+        self.controller = controller  # 🧠 accès au contrôleur depuis la vue
+
+    @Slot()
+    def update_after_response(self):
+        try:
+            summary = self.controller._format_summary(self.controller.state)
+            self.append_collapsible_summary(summary)
+        except Exception as e:
+            print("Erreur dans le résumé:", e)
+
+        last = self.controller.history[-1]
+        if isinstance(last, AIMessage):
+            self.display_response(last.content)
+
+        self.hide_loading()
+
+    @Slot(str)
+    def display_error(self, error_msg):
+        self.append_message("Erreur", error_msg)
+        self.hide_loading()

@@ -1,5 +1,6 @@
 from typing import Annotated, List, TypedDict
 from langgraph.graph.message import add_messages
+from Tools_nodes.treatment_tools.traitement_format import Traitement_Format
 
 from Tools_nodes.database_tools.request_format import request 
 
@@ -32,3 +33,5 @@ class OrderState(TypedDict):
 
     # Flag indicating that the order is placed and completed.
     finished: bool
+
+    traitement_format: Traitement_Format

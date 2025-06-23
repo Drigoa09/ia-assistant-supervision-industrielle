@@ -9,8 +9,12 @@ def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
     #Agent chargé de formaliser sous la forme d'une requête l'information à chercher
-    state['request_call'] = structured_llm.invoke(state['information_chercher'])
+    # Appel du modèle structuré
+    req = structured_llm.invoke(state['information_chercher'])
 
-    print(state['request_call'])
+    # ✅ Stocker proprement
+    state['request_call'] = req
 
+    print("➡️ Requête extraite :", req)
+    print("📦 State keys: EXTRACT_DOC", list(state.keys()))
     return state

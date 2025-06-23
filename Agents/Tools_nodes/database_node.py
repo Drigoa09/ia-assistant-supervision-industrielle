@@ -30,6 +30,6 @@ def database_agent(state: OrderState) -> OrderState:
     new_output = {"messages" : [AIMessage(content=message)]}
 
     state['i'] = -1
-
+    print("📦 State keys: DATABASE", list(state.keys()))
     return state | new_output
 

@@ -23,7 +23,7 @@ Filtrer les programmes en acceptant que ceux contenant l'outil 130
 '''
 
 def treatment_agent(state: OrderState) -> OrderState:
-    """The chatbot itself. A wrapper around the model's own chat interface."""
+    """Agent de traitement"""
 
     if state['traitement'] != None:
         AGENT_GENERATION_SYSINT = '''
@@ -46,8 +46,20 @@ def treatment_agent(state: OrderState) -> OrderState:
         print("Prompt donné : \n")
         print(AGENT_GENERATION_SYSINT)
 
-        state['request_call'] = structured_llm.invoke([AGENT_GENERATION_SYSINT, state['traitement']])
+    traitement_actuel = state.get("traitement", "")
+    prompt = f"{AGENT_GENERATION_SYSINT}\n{traitement_actuel}"
 
-        print(state['request_call'])
+    # Appelle le modèle avec prompt fusionné
+    traitement_format_result = structured_llm.invoke(prompt)
 
-    return state
+    #print("🧪 Résultat traitement_format:", traitement_format_result)
+
+    # Tu crées un NOUVEAU dict propre ici
+    updated_state = {
+        **state,
+        "traitement_format": traitement_format_result
+    }
+
+    #print("📤 Ce que je retourne dans treatment_agent:", list(updated_state.keys()))
+
+    return updated_state
