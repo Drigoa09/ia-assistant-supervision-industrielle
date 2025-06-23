@@ -11,11 +11,11 @@ def continuer_node(state: OrderState) -> OrderState:
 
     return state
 
-def maybe_route_to_treatment(state: OrderState) -> Literal["treatment_agent", "human"]:
+def maybe_route_to_treatment(state: OrderState) -> Literal["Formulateur de requêtes de traitement", "Humain"]:
     """Route to the chatbot, unless it looks like the user is exiting."""
 
     # When the chatbot returns tool_calls, route to the "tools" node.
     if state['i'] < len(state['traitements']):
-        return "treatment_agent"
+        return "Formulateur de requêtes de traitement"
     else:
-        return "human"
+        return "Humain"

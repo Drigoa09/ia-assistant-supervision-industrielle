@@ -20,43 +20,30 @@ os.environ["LANGCHAIN_PROJECT"] = "My_project"
 
 # Start building a new graph.
 graph_builder = StateGraph(OrderState)
-#graph_builder = StateGraph(state_schema=MessagesState)
 
 # Add the chatbot and human nodes to the app graph.
 #graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
-graph_builder.add_node("human", human_node)
-graph_builder.add_node("createurTache", createur_tache)
-graph_builder.add_node("extract_docs", extract_docs_agent)
-graph_builder.add_node("database_agent", database_agent)
-graph_builder.add_node("treatment_agent", treatment_agent)
-graph_builder.add_node("continuer_node", continuer_node)
-graph_builder.add_node("treatment_node", treatment_node)
-#graph_builder.add_node("query_elasticsearch", tool_node)
-#graph_builder.add_node("evaluation_doc_agent", evaluation_docs_agent)
-#graph_builder.add_node("erreur", afficher_erreur)
-#graph_builder.add_node("generer_reponse", generer_reponse)
+graph_builder.add_node("Humain", human_node)
+graph_builder.add_node("Créateur de tâches", createur_tache)
+graph_builder.add_node("Formulateur de demandes d'informations", extract_docs_agent)
+graph_builder.add_node("Executeur de demandes d'informations", database_agent)
+graph_builder.add_node("Formulateur de requêtes de traitement", treatment_agent)
+graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node)
+graph_builder.add_node("Executeur de requêtes de traitement", treatment_node)
 
 # The chatbot will always go to the human next.
 
-#graph_builder.add_conditional_edges("chatbot", maybe_route_to_database)
+graph_builder.add_conditional_edges("Humain", maybe_exit_human_node)
+graph_builder.add_conditional_edges("Indicateur de l'existance de traitements supplémentaires", maybe_route_to_treatment)
 
-graph_builder.add_conditional_edges("human", maybe_exit_human_node)
-graph_builder.add_conditional_edges("continuer_node", maybe_route_to_treatment)
-
-#graph_builder.add_conditional_edges("chatbot", maybe_route_to_extract_docs)
-#graph_builder.add_conditional_edges("extract_docs", maybe_route_to_database)
-#graph_builder.add_edge("query_elasticsearch", "extract_docs")
-#graph_builder.add_edge("erreur", "human")
-#graph_builder.add_edge("evaluation_doc_agent", "human")
-graph_builder.add_edge("createurTache", "extract_docs")
-graph_builder.add_edge("extract_docs", "database_agent")
-graph_builder.add_edge("database_agent", "continuer_node")
-graph_builder.add_edge("treatment_agent", "treatment_node")
-graph_builder.add_edge("treatment_node", "continuer_node")
-#graph_builder.add_edge("generer_reponse", "human")
+graph_builder.add_edge("Créateur de tâches", "Formulateur de demandes d'informations")
+graph_builder.add_edge("Formulateur de demandes d'informations", "Executeur de demandes d'informations")
+graph_builder.add_edge("Executeur de demandes d'informations", "Indicateur de l'existance de traitements supplémentaires")
+graph_builder.add_edge("Formulateur de requêtes de traitement", "Executeur de requêtes de traitement")
+graph_builder.add_edge("Executeur de requêtes de traitement", "Indicateur de l'existance de traitements supplémentaires")
 
 # Start with the chatbot again.
-graph_builder.add_edge(START, "human")
+graph_builder.add_edge(START, "Humain")
 
 chat_with_human_graph = graph_builder.compile()
 
@@ -76,6 +63,7 @@ if __name__ == "__main__":
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
 #  - 'q' to exit.
+
 '''
 from langchain_core.runnables.graph import MermaidDrawMethod
 from IPython.display import Image, display

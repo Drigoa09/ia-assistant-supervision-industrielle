@@ -29,9 +29,6 @@ class OrderState(TypedDict):
     #DataFrame obtenu et traité à partir de la baes de donnée et dont le contenu
     #est envoyé à l'utilisateur
     dataFrames : list
-    #Contient les colonnes de la dataFrame
-    dataFrames_columns : list[str]
-    dataFrames_role : list[str]
 
     # Flag indicating that the order is placed and completed.
     finished: bool

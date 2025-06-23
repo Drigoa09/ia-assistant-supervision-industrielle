@@ -36,6 +36,7 @@ class Attribut(Enum):
 
 class Machine(Enum):
     Huron_KXFive = "logstash-huron-k3x8f-202*"
+    SigScan = "sigscan"
 
 class variable_principale(BaseModel):
     nom : Attribut_Principal = Field(description = "Nom de l'attribut de la variable principale parmi les énumérations")
@@ -55,6 +56,7 @@ PERIODES = '''
 MACHINES = '''
 🗂️ **Sélection de la machine :**
 - Par défaut → `logstash-huron-k3x8f-202*`
+- Si la question mentionne **"sigscan"**, **"bac"**, ou **"géolocalisation"** → `sigscan`
 '''
 
 VARIABLES = '''
@@ -78,6 +80,8 @@ class elements_cherches(BaseModel):
 
     variables_requete : List[variable] = Field(description = "Associer les variables recherchées." + VARIABLES)
 
+    description : str = Field(description = "Description des variables recherchées et explication de pourquoi ils sont là")
+
 class request(BaseModel):
     """Format d'une requête à la base de donnée"""
 
@@ -85,6 +89,6 @@ class request(BaseModel):
     intention : str = Field(description = "Intention de la requête")
     type_traitement : str = Field(description = "Type du traitement")
 
-    elements_cherches_request : List[elements_cherches] = Field(description="Liste des éléments cherchés dans la base de données. On peut ajouter un autre élément à elements_cherches_request pour faire une autre requête")
+    elements_cherches_request : List[elements_cherches] = Field(description="Liste des éléments cherchés dans la base de données. On peut ajouter un autre élément à elements_cherches_request pour faire une autre requête. La description de elements_cherches explique leur rôle et ce qu'ils font")
 
     resultat_attendu : List[str] = Field("Liste des résultats attendus")

@@ -1,11 +1,14 @@
-from typing import Literal
 from Tools_nodes.database_tools.request_traitement import traitement
 from langchain_core.messages.ai import AIMessage
 import OrderState
 
-WELCOME_MSG = (
-    "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
-)
+import pandas as pd
+
+class DataFrameRole:
+
+    def __init__(self, dataFrame, role):
+        self.dataFrame = dataFrame
+        self.role = role
 
 def database_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
@@ -13,18 +16,16 @@ def database_agent(state: OrderState) -> OrderState:
     message = ""
 
     state['dataFrames'] = []
-    state['dataFrames_columns'] = []
-    state['dataFrames_role'] = []
     
     for element_cherche in state['request_call'].elements_cherches_request:
         (dataframes, fields_alias_contexte, fields_role) = traitement(element_cherche)
 
+        i = 0
         for (dataFrame_index) in dataframes:
-            state['dataFrames'].append(dataframes[dataFrame_index])
+            state['dataFrames'].append(DataFrameRole(dataFrame=dataframes[dataFrame_index], role = fields_role[i]))
             message += dataframes[dataFrame_index].to_html()
 
-        state['dataFrames_columns'] += fields_alias_contexte
-        state['dataFrames_role'] += fields_role
+            i += 1
 
     new_output = {"messages" : [AIMessage(content=message)]}
 

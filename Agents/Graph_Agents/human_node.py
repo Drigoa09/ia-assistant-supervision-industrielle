@@ -1,8 +1,6 @@
-from datetime import datetime
-from time import timezone
 from OrderState import OrderState
 from typing import Literal
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END
 from langchain_core.messages import HumanMessage, AIMessage
 
 WELCOME_MSG = (
@@ -55,9 +53,9 @@ def human_node(state: OrderState) -> OrderState:
     return state | {"messages": [HumanMessage(user_input)]}
     '''
 
-def maybe_exit_human_node(state: OrderState) -> Literal["createurTache", "__end__"]:
+def maybe_exit_human_node(state: OrderState) -> Literal["Créateur de tâches", "__end__"]:
     if state.get("finished", False):
         return END
-    return "createurTache"
+    return "Créateur de tâches"
 
     
