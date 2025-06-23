@@ -1,8 +1,6 @@
 from typing import Literal
 from OrderState import OrderState
 
-from model import model_mistral_medium
-
 def continuer_node(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
 
@@ -10,9 +8,6 @@ def continuer_node(state: OrderState) -> OrderState:
     
     if state['i'] < len(state['traitements']):
         state['traitement'] = state['traitements'][state['i']]
-    else:
-        request = model_mistral_medium.invoke("Fait apparaître une chanson de Jul au hasard avec les paroles")
-        return state | {'messages' : request}
 
     return state
 

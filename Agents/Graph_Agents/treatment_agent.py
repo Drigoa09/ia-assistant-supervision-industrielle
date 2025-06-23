@@ -1,5 +1,5 @@
 from OrderState import OrderState
-from model import model_codestral
+from model import model_codestral, model_mistral_medium
 
 from Tools_nodes.treatment_tools.traitement_format import Traitement_Format
 

@@ -12,10 +12,10 @@ class Separation(BaseModel):
     Les données contenues dans les attributs doivent être des phrases
     """
 
-    INFORMATION_CHERCHER : str = Field(description = "Information recherchée dans la base de donnée. Exprimé sous forme d'un ordre")
+    INFORMATION_CHERCHER : str = Field(description = "Information recherchée dans la base de donnée. Exprimé sous forme d'un ordre.")
     TRAITEMENT : Optional[List[str]] = Field(default= None, description = "Traitements faits sur les informations de la base de donnée déduit à partir de la question. Exprimé sous forme d'un ordre")
 #Model forcé à envoyer une réponse structurée sous la forme de Separation
-structured_llm = model_codestral.with_structured_output(Separation)
+structured_llm = model_mistral_medium.with_structured_output(Separation)
 #Créateur de tâches 
 def createur_tache(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
