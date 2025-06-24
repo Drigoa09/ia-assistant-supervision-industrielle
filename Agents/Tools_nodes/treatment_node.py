@@ -16,7 +16,7 @@ def creer_graphique(dataFrames, args, args_restants):
     ax.plot(x,y)
     ax.set_xlabel(args[0].cle_dataFrame)
     ax.set_ylabel(args[1].cle_dataFrame)
-    ax.set_title("Graphique de " + args[0].cle_dataFrame + " en fonction de " + args[1].cle_dataFrame)
+    ax.set_title("Graphique de " + args[1].cle_dataFrame + " en fonction de " + args[0].cle_dataFrame)
 
     return fig
 
@@ -208,7 +208,7 @@ def treatment_node(state: OrderState) -> OrderState:
             message += dataFrame_index.dataFrame.to_html()
 
         #new_output = {"messages" : [AIMessage(content=message)]}
-
+        print("📦 State après traitement:", list(state.keys()))
         return {
                 **state,
                 "messages": state["messages"] + [AIMessage(content=message)]

@@ -63,15 +63,21 @@ class ChatController:
 
         # Traitements effectués
         lines.append("🔧 <b>Traitements effectués</b> :")
-        for i, t in enumerate(traitements):
-            lines.append(f"➡️ Traitement {i + 1} : {t}")
+        if traitements:
+            for i, t in enumerate(traitements):
+                lines.append(f"➡️ Traitement {i + 1} : {t}")
+        else:
+            lines.append("➡️ Aucun traitement déclaré")
         # Fonctions appelées
         lines.append("🛠️ <b>Fonctions appliquées :</b>")
-        for i, f in enumerate(fonctions.fonctions_appelees):
-            args_str = ', '.join(str(arg) for arg in f.args)  # Convertit tous les args en string
-            lines.append(
-                f"⚙️ <b>Fonction {i + 1}</b> : {f.fonction_appelee.value} avec args {args_str}"
-            )
+        if fonctions and hasattr(fonctions, "fonctions_appelees"):
+            for i, f in enumerate(fonctions.fonctions_appelees):
+                args_str = ', '.join(str(arg) for arg in f.args)  # Convertit tous les args en string
+                lines.append(
+                    f"⚙️ <b>Fonction {i + 1}</b> : {f.fonction_appelee.value} avec args {args_str}"
+                )
+        else:
+            lines.append("⚙️ Aucune fonction détectée ou applicable")
 
         return "<br>".join(lines)
 

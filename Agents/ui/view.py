@@ -1,13 +1,12 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy, QScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
 import markdown2
 from ui.CollapsibleBox import CollapsibleBox 
-from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation
 from PySide6.QtGui import QMovie
 import os
 from PySide6.QtCore import Slot
 from langchain_core.messages import AIMessage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
     # Constructeur de la fenêtre de chat
@@ -22,6 +21,16 @@ class ChatWindow(QWidget):
 
         self.chat_display = QTextEdit() # Zone d'affichage du chat
         self.chat_display.setReadOnly(True) # Rendre la zone d'affichage en lecture seule
+        self.chat_display.setStyleSheet("""
+            QTextEdit {
+                background-color: #fefefe;
+                font-family: Consolas, monospace;
+                font-size: 13px;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+        """)
         self.layout.addWidget(self.chat_display) # Ajout de la zone d'affichage au layout
 
         input_layout = QHBoxLayout() # Création du layout horizontal pour les entrées
@@ -51,8 +60,9 @@ class ChatWindow(QWidget):
         self.loading_layout = QHBoxLayout()
         self.loading_layout.setContentsMargins(0, 0, 0, 0)
         self.loading_layout.setSpacing(0)
-        self.loading_layout.addWidget(self.loading_text_label)
         self.loading_layout.addWidget(self.loading_gif_label)
+        self.loading_layout.addWidget(self.loading_text_label)
+        
         
 
         # 🧱 Ajout du spacer à droite
@@ -76,24 +86,39 @@ class ChatWindow(QWidget):
         self.input_field.returnPressed.connect(self.controller.on_send_clicked) # Connexion de la touche "Entrée" à la méthode du contrôleur
         self.quit_button.clicked.connect(QApplication.instance().quit) # Connexion du bouton de quitter à l'application
         self.summary_box = None  # 🔥 pour mémoriser la box actuelle
+        self.fade_animation = None
+
         self.append_collapsible_summary("<b>Résumé de test</b>")
-        self.show_loading()
-        QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
+        self.dots_timer = QTimer()
+        self.dots_timer.timeout.connect(self._animate_loading_text)
+        self.dots_state = 0
+        #self.show_loading()
+        #QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
 
 
     # Fonction pour ajouter un message à la zone d'affichage du chat
     def append_message(self, sender, content):
         self.chat_display.append(f"<b>{sender}:</b> {content}")
+        self.chat_display.verticalScrollBar().setValue(self.chat_display.verticalScrollBar().maximum())
     # Fonction pour afficher un message de chargement
     def show_loading(self):
+        self.dots_state = 0
+        self.loading_text_label.setText("Réflexion en cours")
         self.loading_widget.setVisible(True)
         self.loading_movie.start()
+        self.dots_timer.start(500)  # Rafraîchissement toutes les 500ms
         QApplication.processEvents()
     # Fonction pour cacher le message de chargement
     def hide_loading(self):
+        self.dots_timer.stop()
         self.loading_movie.stop()
         self.loading_widget.setVisible(False)
         QApplication.processEvents()
+    # Fonction pour animer le texte de chargement
+    def _animate_loading_text(self):
+        dots = '.' * (self.dots_state % 4)  # "", ".", "..", "..."
+        self.loading_text_label.setText(f"Réflexion en cours{dots}")
+        self.dots_state += 1
     # Fonction pour afficher la réponse de l'assistant
     def display_response(self, markdown_text):
         html = markdown2.markdown(markdown_text)
@@ -130,8 +155,20 @@ class ChatWindow(QWidget):
         self.controller = controller  # accès au contrôleur depuis la vue
     def append_matplotlib_plot(self, fig):
         canvas = FigureCanvas(fig)
-        canvas.setFixedHeight(300)  # ou adapte dynamiquement
-        self.layout.insertWidget(self.layout.count() - 2, canvas)
+        canvas.setMinimumHeight(300)  # Tu peux ajuster
+
+        # Option simple sans box repliable:
+        #self.layout.insertWidget(self.layout.count() - 2, canvas)
+
+        # dans une box repliable
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(canvas)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        box = CollapsibleBox("📈 Graphique généré")
+        box.setContent(scroll_area)
+        self.layout.insertWidget(self.layout.count() - 2, box)
     @Slot()
     def update_after_response(self):
         try:
