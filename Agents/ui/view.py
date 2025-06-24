@@ -1,12 +1,21 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QFileDialog, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
 import markdown2
 from ui.CollapsibleBox import CollapsibleBox 
-from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation
+from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtGui import QMovie
 import os
 from PySide6.QtCore import Slot
 from langchain_core.messages import AIMessage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+"""         self.chat_display.setStyleSheet(
+            QTextEdit {
+                background-color: #fefefe;
+                font-family: Consolas, monospace;
+                font-size: 13px;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }) """
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
     # Constructeur de la fenêtre de chat
@@ -18,19 +27,19 @@ class ChatWindow(QWidget):
 
         self.layout = QVBoxLayout() # Création du layout vertical
         self.setLayout(self.layout) # Application du layout à la fenêtre
+        # Layout des boutons "Exporter" et "Charger"
+        action_layout = QHBoxLayout()
+        self.save_button = QPushButton("📥 Exporter le chat")
+        self.load_button = QPushButton("📂 Charger l'historique")
+        self.save_button.clicked.connect(lambda: self.controller.save_history_to_file())
+        self.load_button.clicked.connect(lambda: self.controller.open_history_file_dialog())
+        action_layout.addWidget(self.save_button)
+        action_layout.addWidget(self.load_button)
 
+        self.layout.addLayout(action_layout)  # ➕ tout en haut
         self.chat_display = QTextEdit() # Zone d'affichage du chat
         self.chat_display.setReadOnly(True) # Rendre la zone d'affichage en lecture seule
-        self.chat_display.setStyleSheet("""
-            QTextEdit {
-                background-color: #fefefe;
-                font-family: Consolas, monospace;
-                font-size: 13px;
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }
-        """)
+
         self.layout.addWidget(self.chat_display) # Ajout de la zone d'affichage au layout
 
         input_layout = QHBoxLayout() # Création du layout horizontal pour les entrées
@@ -95,7 +104,10 @@ class ChatWindow(QWidget):
         #self.show_loading()
         #QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
 
-
+    def _open_history_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Charger un historique", "", "Fichiers JSON (*.json)")
+        if file_path:
+            self.controller.load_history_from_file(file_path)
     # Fonction pour ajouter un message à la zone d'affichage du chat
     def append_message(self, sender, content):
         self.chat_display.append(f"<b>{sender}:</b> {content}")
