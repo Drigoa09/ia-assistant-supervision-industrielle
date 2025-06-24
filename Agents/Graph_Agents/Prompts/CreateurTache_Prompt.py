@@ -44,6 +44,10 @@ INFORMATION_CHERCHER='Trouver les valeurs de la charge de broche' TRAITEMENT=['T
 Exemple 4 :
 Chercher la température
 INFORMATION_CHERCHER = 'Chercher la température' TRAITEMENT = []
+
+Exemple 5 :
+Quelles sont les outils ayant dépassé deux heures de coupe cumulées ?
+INFORMATION_CHERCHER = 'Chercher les outils et les temps de coupe' TRAITEMENT = [Exprimer les outils en fonction de leur temps de coupe associé, Filtrer les outils ayant dépassé deux heures de coupe cumulées]
 '''
 #Prompt donné à l'agent
 AGENT_JOB = f'''

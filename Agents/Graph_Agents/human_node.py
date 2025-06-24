@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 WELCOME_MSG = "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
 
 def human_node(state: OrderState) -> OrderState:
+    
     if not state["messages"]:
         # Premier tour : injecter le message de bienvenue
         state["messages"].append(AIMessage(content=WELCOME_MSG))

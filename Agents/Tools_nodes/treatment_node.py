@@ -26,13 +26,11 @@ Les temps de coupe sont inclus dans des programmes
 Les programmes sont inclus dans des temps de cycles.
 """
 
-def filtrer(dataFrames, args, args_restants):
+def filtrer_valeur(dataFrames, args, args_restants):
 
     new_dataFrames = []
 
     programme_cible = args[0]
-    arg1 = args[1]
-    arg2 = args[2]
     
     cycles_fonctionnement = dataFrames[args[1].numero_dataFrame].dataFrame
     cycles_coupe = dataFrames[args[2].numero_dataFrame].dataFrame
@@ -47,14 +45,35 @@ def filtrer(dataFrames, args, args_restants):
         start_coupe = v["start"]
         outil = v[args[2].cle_dataFrame]
         for start_prog, end_prog in cycles_programme_cible:
-            if (start_prog <= start_coupe <= end_prog) and outil is not None:
+            if (start_prog <= start_coupe <= end_prog) or (start_coupe <= start_prog <= v["end"]) and outil is not None:
                 outils_utilisés.add(outil)
                 break
 
-    dataFrame = pd.DataFrame(list(outils_utilisés))
-    print(args[2])
-    dataFrame.columns = [args[2].cle_dataFrame]
+    dataFrame = pd.DataFrame(list(outils_utilisés), columns=[args[2].cle_dataFrame])
+    
     new_dataFrames.append(DataFrameRole(dataFrame, []))
+
+    return new_dataFrames
+
+def filtrer_comparaison(dataFrames, args, args_restants):
+    
+    new_dataFrames = []
+
+    dataFrames_columns = dataFrames[args[0].numero_dataFrame].dataFrame[args[0].cle_dataFrame]
+
+    if args[1] == "-inf":
+        inf = -float('inf')
+    else:
+        inf = int(args[1])
+
+    if args[2] == "+inf":
+        sup = float('inf')
+    else:
+        sup = int(args[2])
+
+    df = dataFrames[args[0].numero_dataFrame].dataFrame[inf < dataFrames_columns]
+    df = df[dataFrames_columns < sup]
+    new_dataFrames.append(DataFrameRole(df, ""))
 
     return new_dataFrames
 
@@ -166,14 +185,18 @@ def treatment_node(state: OrderState) -> OrderState:
 
                 new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args, args_restants)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER:
+            elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_VALEUR:
 
-                new_dataFrames += filtrer(state['dataFrames'], fonction_appelee.args, args_restants)
+                new_dataFrames += filtrer_valeur(state['dataFrames'], fonction_appelee.args, args_restants)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
                 
                 #new_dataFrames += creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
                 state['figure'] = creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
+
+            elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_COMPARAISON:
+
+                new_dataFrames += filtrer_comparaison(state['dataFrames'], fonction_appelee.args, args_restants)
 
 
         state['dataFrames'] = new_dataFrames
