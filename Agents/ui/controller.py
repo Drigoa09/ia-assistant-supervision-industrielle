@@ -1,7 +1,11 @@
-from matplotlib import lines
-from ui.view import CollapsibleBox, ChatWindow
+from ui.view import ChatWindow
 from ui.worker import Worker
+from langchain_core.messages import AIMessage, HumanMessage
 from PySide6.QtCore import QThread, QMetaObject, Qt, Q_ARG
+from PySide6.QtWidgets import QFileDialog, QMessageBox
+import json
+from datetime import datetime
+import os
 #from langchain_core.messages import AIMessage
 #from logic.core import process_user_input
 
@@ -14,7 +18,93 @@ class ChatController:
     def set_view(self, view: ChatWindow):
         self.view = view
         self.view.set_controller(self)  # 🆕 (permet à la vue d'accéder au contrôleur)
+    def save_history_to_file(self):
+        # 📁 Création du dossier "exports" s'il n'existe pas
+        export_dir = os.path.join(os.getcwd(), "exports")
+        os.makedirs(export_dir, exist_ok=True)
 
+        # 🕒 Nom par défaut avec timestamp
+        default_filename = f"historique_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        default_path = os.path.join(export_dir, default_filename)
+
+        # 💬 Fenêtre de dialogue
+        path, _ = QFileDialog.getSaveFileName(
+            self.view,
+            "Enregistrer l'historique",
+            default_path,
+            "Fichiers JSON (*.json)"
+        )
+
+        if not path:
+            return  # utilisateur a annulé
+
+        if not path.endswith(".json"):
+            path += ".json"
+
+        try:
+            # 🧼 Conversion des objets non-sérialisables
+            serializable_history = []
+            for msg in self.history:
+                if isinstance(msg, HumanMessage):
+                    serializable_history.append({"role": "user", "content": msg.content})
+                elif isinstance(msg, AIMessage):
+                    serializable_history.append({"role": "ai", "content": msg.content})
+
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(serializable_history, f, indent=2, ensure_ascii=False)
+
+            print(f"✅ Historique enregistré avec succès dans : {path}")
+
+        except Exception as e:
+            self.view.display_error(f"Erreur lors de la sauvegarde : {str(e)}")
+
+    def load_history_from_file(self, filepath):
+        confirm = QMessageBox.StandardButton.Yes
+        if self.history:
+            confirm = QMessageBox.question(
+                self.view,
+                "Confirmation",
+                "⚠️ Cette action va effacer la conversation actuelle. Voulez-vous continuer ?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+        if confirm == QMessageBox.StandardButton.No:
+            return
+        with open(filepath, "r", encoding="utf-8") as f:
+            raw_history = json.load(f)
+
+        self.history = []
+        self.view.chat_display.clear()
+
+        last_user_msg = None
+        last_ai_msg = None
+
+        for msg in raw_history:
+            if msg["role"] == "user":
+                if last_user_msg and last_ai_msg:
+                    # Afficher la dernière réponse IA avant de passer au prochain user
+                    self.view.display_response(last_ai_msg)
+
+                self.history.append(HumanMessage(content=msg["content"]))
+                self.view.append_message("Vous", msg["content"])
+                last_user_msg = msg["content"]
+                last_ai_msg = None
+
+            elif msg["role"] == "ai":
+                self.history.append(AIMessage(content=msg["content"]))
+                last_ai_msg = msg["content"]
+
+        # Affiche la dernière réponse IA si présente
+        if last_ai_msg:
+            self.view.display_response(last_ai_msg)
+    def open_history_file_dialog(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self.view,
+            "Ouvrir un historique",
+            "",
+            "Fichiers JSON (*.json)"
+        )
+        if path:
+            self.load_history_from_file(path)
     def _format_summary(self, state):
         print("📦 State keys: FORMAT_SUMMARY", list(state.keys()))
         req = state.get("request_call", None)
