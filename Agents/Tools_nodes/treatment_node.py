@@ -5,14 +5,20 @@ from Tools_nodes.treatment_tools.traitement_format import fonctions_existantes
 import OrderState
 
 import matplotlib.pyplot as plt
-
+from matplotlib.figure import Figure
 from Tools_nodes.database_node import DataFrameRole
 
 def creer_graphique(dataFrames, args, args_restants):
-    plt.plot(dataFrames[args[0].numero_dataFrame].dataFrame[args[0].cle_dataFrame], dataFrames[args[1].numero_dataFrame].dataFrame[args[1].cle_dataFrame])
-    plt.show()
+    fig = Figure()
+    ax = fig.add_subplot(111)
+    x = dataFrames[args[0].numero_dataFrame].dataFrame[args[0].cle_dataFrame]
+    y = dataFrames[args[1].numero_dataFrame].dataFrame[args[1].cle_dataFrame]
+    ax.plot(x,y)
+    ax.set_xlabel(args[0].cle_dataFrame)
+    ax.set_ylabel(args[1].cle_dataFrame)
+    ax.set_title("Graphique de " + args[0].cle_dataFrame + " en fonction de " + args[1].cle_dataFrame)
 
-    return []
+    return fig
 
 """
 Les outils utilisés sont inclus dans des temps de coupe.
@@ -165,8 +171,9 @@ def treatment_node(state: OrderState) -> OrderState:
                 new_dataFrames += filtrer(state['dataFrames'], fonction_appelee.args, args_restants)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
-
-                new_dataFrames += creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
+                
+                #new_dataFrames += creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
+                state['figure'] = creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
 
 
         state['dataFrames'] = new_dataFrames

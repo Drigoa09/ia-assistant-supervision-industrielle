@@ -3,7 +3,7 @@ from langgraph.graph.message import add_messages
 from Tools_nodes.treatment_tools.traitement_format import Traitement_Format
 
 from Tools_nodes.database_tools.request_format import request 
-
+from matplotlib.figure import Figure
 class OrderState(TypedDict):
     """State representing the customer's order conversation."""
 
@@ -35,3 +35,4 @@ class OrderState(TypedDict):
     finished: bool
 
     traitement_format: Traitement_Format
+    figure: Figure

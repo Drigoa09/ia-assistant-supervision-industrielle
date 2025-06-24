@@ -70,7 +70,7 @@ class ChatController:
         for i, f in enumerate(fonctions.fonctions_appelees):
             args_str = ', '.join(str(arg) for arg in f.args)  # Convertit tous les args en string
             lines.append(
-                f"⚙️ <b>Traitement {i + 1}</b> : {f.fonction_appelee.value} avec args {args_str}"
+                f"⚙️ <b>Fonction {i + 1}</b> : {f.fonction_appelee.value} avec args {args_str}"
             )
 
         return "<br>".join(lines)

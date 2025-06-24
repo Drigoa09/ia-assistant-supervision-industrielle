@@ -6,6 +6,7 @@ from PySide6.QtGui import QMovie
 import os
 from PySide6.QtCore import Slot
 from langchain_core.messages import AIMessage
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
@@ -127,7 +128,10 @@ class ChatWindow(QWidget):
         self.summary_box.toggle_button.setArrowType(Qt.DownArrow)
     def set_controller(self, controller):
         self.controller = controller  # accès au contrôleur depuis la vue
-
+    def append_matplotlib_plot(self, fig):
+        canvas = FigureCanvas(fig)
+        canvas.setFixedHeight(300)  # ou adapte dynamiquement
+        self.layout.insertWidget(self.layout.count() - 2, canvas)
     @Slot()
     def update_after_response(self):
         try:
@@ -139,6 +143,11 @@ class ChatWindow(QWidget):
         last = self.controller.history[-1]
         if isinstance(last, AIMessage):
             self.display_response(last.content)
+
+        # 🎯 Affiche le graphique si présent
+        fig = self.controller.state.get("figure")
+        if fig:
+            self.append_matplotlib_plot(fig)
 
         self.hide_loading()
 
