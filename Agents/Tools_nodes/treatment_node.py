@@ -26,7 +26,7 @@ Les temps de coupe sont inclus dans des programmes
 Les programmes sont inclus dans des temps de cycles.
 """
 
-def filtrer_valeur(dataFrames, args, args_restants):
+def filtrer_valeur(dataFrames, args):
 
     new_dataFrames = []
 
@@ -51,11 +51,31 @@ def filtrer_valeur(dataFrames, args, args_restants):
 
     dataFrame = pd.DataFrame(list(outils_utilisés), columns=[args[2].cle_dataFrame])
     
-    new_dataFrames.append(DataFrameRole(dataFrame, []))
+    new_dataFrames.append(DataFrameRole(dataFrame, dataFrames[args[2].numero_dataFrame].role + " Filtré par la fonction filtrer_valeur"))
 
     return new_dataFrames
 
-def filtrer_comparaison(dataFrames, args, args_restants):
+def n_premiers(dataFrames, args):
+
+    new_dataFrames = []
+
+    dataFrame = dataFrames[args[0].numero_dataFrame].dataFrame
+
+    new_dataFrames.append(DataFrameRole(dataFrame.head(int(args[1])), dataFrames[args[0].numero_dataFrame].role + " Filtré par n_premiers."))
+
+    return new_dataFrames
+
+
+from datetime import datetime
+
+def is_valid_date(s: str, fmt: str) -> bool:
+    try:
+        datetime.strptime(s, fmt)
+        return True
+    except ValueError:
+        return False
+
+def filtrer_comparaison(dataFrames, args):
     
     new_dataFrames = []
 
@@ -64,30 +84,36 @@ def filtrer_comparaison(dataFrames, args, args_restants):
     if args[1] == "-inf":
         inf = -float('inf')
     else:
-        inf = int(args[1])
+        inf = args[1]
 
     if args[2] == "+inf":
         sup = float('inf')
     else:
-        sup = int(args[2])
+        sup = args[2]
 
-    df = dataFrames[args[0].numero_dataFrame].dataFrame[inf < dataFrames_columns]
-    df = df[dataFrames_columns < sup]
-    new_dataFrames.append(DataFrameRole(df, ""))
+    if is_valid_date(inf, "%H:%M:%S") or is_valid_date(sup, "%H:%M:%S"):
+        df = dataFrames[args[0].numero_dataFrame].dataFrame
+        
+        if inf != -float('inf'):
+            df = df[pd.to_datetime(dataFrames_columns, utc=True).dt.time > pd.to_datetime(inf).time()]
+        if sup != float('inf'):
+            df = df[pd.to_datetime(dataFrames_columns, utc=True).dt.time < pd.to_datetime(sup).time()]
+    else:
+        df = dataFrames[args[0].numero_dataFrame].dataFrame[inf < dataFrames_columns]
+        df = df[dataFrames_columns < sup]
+
+    new_dataFrames.append(DataFrameRole(df, dataFrames[args[0].numero_dataFrame].role + " Filtré par la fonction filtrer_comparaison"))
 
     return new_dataFrames
 
-def plus_occurent(dataFrames, args, args_restants):
+def plus_occurent(dataFrames, args):
 
     new_dataFrames = []
 
     for arg in args:
         frame = dataFrames[arg.numero_dataFrame].dataFrame[arg.cle_dataFrame].value_counts().to_frame()
-        frame.columns = [arg.cle_dataFrame]
+        frame.columns = ["Occurences"]
         new_dataFrames.append(DataFrameRole(frame, dataFrames[arg.numero_dataFrame].role))
-
-    for arg in args:
-        args_restants.append(arg.cle_dataFrame)
 
     return new_dataFrames
 
@@ -124,7 +150,7 @@ def extraire_intervalles(df_source, df_contextes, variables_contextes, seuil_pau
 
 import pandas as pd
     
-def exprimer_information_en_fonction_autre(dataFrames, args, args_restants):
+def exprimer_information_en_fonction_autre(dataFrames, args):
 
     new_dataFrames = []
 
@@ -179,15 +205,15 @@ def treatment_node(state: OrderState) -> OrderState:
             
             if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
                 
-                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args, args_restants)
+                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.INFORMATION_EN_FONCTION_AUTRE:
 
-                new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args, args_restants)
+                new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_VALEUR:
 
-                new_dataFrames += filtrer_valeur(state['dataFrames'], fonction_appelee.args, args_restants)
+                new_dataFrames += filtrer_valeur(state['dataFrames'], fonction_appelee.args)
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
                 
@@ -196,11 +222,14 @@ def treatment_node(state: OrderState) -> OrderState:
 
             elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_COMPARAISON:
 
-                new_dataFrames += filtrer_comparaison(state['dataFrames'], fonction_appelee.args, args_restants)
+                new_dataFrames += filtrer_comparaison(state['dataFrames'], fonction_appelee.args)
+
+            elif fonction_appelee.fonction_appelee == fonctions_existantes.N_PREMIERS:
+
+                new_dataFrames += n_premiers(state['dataFrames'], fonction_appelee.args)
 
 
         state['dataFrames'] = new_dataFrames
-        state['dataFrames_columns'] = args_restants
 
         message = ""
 

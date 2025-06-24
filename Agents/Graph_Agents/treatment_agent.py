@@ -24,7 +24,14 @@ Filtrer les programmes en acceptant que ceux contenant l'outil 130
 Exemple 4 :
 Filtrer les outils ayant dépassé deux heures de coupe cumulées
 
+N'oublie pas que les numéros de dataFrame et leur clé doit exister
+
 [fonction(fonction_appelee=<fonctions_existantes.FILTRER_COMPARAISON: 'filtrer_comparaison'>, args=[Element(numero_dataFrame=numéro correspondant au temps, cle_dataFrame=clé correspondant au temps), '7200', '+inf']
+
+Exemple 5:
+Extraire les 3 premières alarmes
+
+[fonction(fonction_appelee=<fonctions_existantes.N_PREMIERS: 'filtrer_comparaison'>, args=[Element(numero_dataFrame=numéro correspondant aux alarmes, cle_dataFrame=clé correspondant aux alarmes), '3']
 '''
 
 def treatment_agent(state: OrderState) -> OrderState:
@@ -38,6 +45,9 @@ def treatment_agent(state: OrderState) -> OrderState:
         Tu as accès aux clés de dataFrame : \n
 
         timestamp signifie le temps où la donnée a été prise
+        timestamp n'existe pas forcément.
+        D'autres variables peuvent représenter le temps
+
         '''
         n = len(state['dataFrames'])
         

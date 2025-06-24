@@ -48,6 +48,11 @@ INFORMATION_CHERCHER = 'Chercher la température' TRAITEMENT = []
 Exemple 5 :
 Quelles sont les outils ayant dépassé deux heures de coupe cumulées ?
 INFORMATION_CHERCHER = 'Chercher les outils et les temps de coupe' TRAITEMENT = [Exprimer les outils en fonction de leur temps de coupe associé, Filtrer les outils ayant dépassé deux heures de coupe cumulées]
+
+Exemple 6 :
+Quelles sont les 3 alarmes les plus récurrentes ?
+
+INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières alarmes"]
 '''
 #Prompt donné à l'agent
 AGENT_JOB = f'''
