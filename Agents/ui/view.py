@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QLabel, QSpacerItem, QSizePolicy, QScrollArea
 import markdown2
 from ui.CollapsibleBox import CollapsibleBox 
 from PySide6.QtCore import Qt, QTimer, QSize
@@ -101,20 +101,32 @@ class ChatWindow(QWidget):
     def append_collapsible_summary(self, html_summary: str):
         if self.summary_box is None:
             self.summary_box = CollapsibleBox("📊 Résumé")
+
+            # Contenu scrollable
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setMinimumHeight(10)  #  ajustable selon ton besoin
+            scroll.setStyleSheet("QScrollArea { border: none; }")  # clean look
+
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
-            self.summary_box.setContent(label)
+            label.setTextInteractionFlags(Qt.TextSelectableByMouse)  # optionnel : permet de copier
+            label.setText(html_summary)
+
+            scroll.setWidget(label)
+
+            self.summary_box.setContent(scroll)
             self.layout.insertWidget(self.layout.count() - 2, self.summary_box)
         else:
-            label = self.summary_box.content_area.layout().itemAt(0).widget()
-        
-        label.setText(html_summary)
+            scroll = self.summary_box.content_area.layout().itemAt(0).widget()
+            label = scroll.widget()
+            label.setText(html_summary)
         self.summary_box.content_area.setVisible(True)
         self.summary_box.toggle_button.setChecked(True)
         self.summary_box.toggle_button.setArrowType(Qt.DownArrow)
     def set_controller(self, controller):
-        self.controller = controller  # 🧠 accès au contrôleur depuis la vue
+        self.controller = controller  # accès au contrôleur depuis la vue
 
     @Slot()
     def update_after_response(self):
