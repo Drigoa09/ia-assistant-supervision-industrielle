@@ -19,7 +19,12 @@ Afficher les informations sur un graphique
 Exemple 3 :
 Filtrer les programmes en acceptant que ceux contenant l'outil 130
 
-[fonction(fonction_appelee=<fonctions_existantes.FILTRER: 'filtrer'>, args=['130', Element(numero_dataFrame=numéro correspondant aux outils, cle_dataFrame=clé correspondant aux outils), Element(numero_dataFrame=numéro correspondant aux programmes, cle_dataFrame=clé correspondant aux programmes)])]
+[fonction(fonction_appelee=<fonctions_existantes.FILTRER_VALEUR: 'filtrer_valeur'>, args=['130', Element(numero_dataFrame=numéro correspondant aux outils, cle_dataFrame=clé correspondant aux outils), Element(numero_dataFrame=numéro correspondant aux programmes, cle_dataFrame=clé correspondant aux programmes)])]
+
+Exemple 4 :
+Filtrer les outils ayant dépassé deux heures de coupe cumulées
+
+[fonction(fonction_appelee=<fonctions_existantes.FILTRER_COMPARAISON: 'filtrer_comparaison'>, args=[Element(numero_dataFrame=numéro correspondant au temps, cle_dataFrame=clé correspondant au temps), '7200', '+inf']
 '''
 
 def treatment_agent(state: OrderState) -> OrderState:
