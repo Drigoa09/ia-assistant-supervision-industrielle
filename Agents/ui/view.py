@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QHBoxLayout, QApplication, QFileDialog, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QLineEdit, QPushButton, QHBoxLayout, QApplication, QFileDialog, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
 import markdown2
 from ui.CollapsibleBox import CollapsibleBox 
-from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve
 from PySide6.QtGui import QMovie
 import os
 from PySide6.QtCore import Slot
@@ -37,10 +37,22 @@ class ChatWindow(QWidget):
         action_layout.addWidget(self.load_button)
 
         self.layout.addLayout(action_layout)  # ➕ tout en haut
-        self.chat_display = QTextEdit() # Zone d'affichage du chat
-        self.chat_display.setReadOnly(True) # Rendre la zone d'affichage en lecture seule
+        self.chat_scroll = QScrollArea()
+        self.chat_scroll.setWidgetResizable(True)
+        self.chat_scroll.setStyleSheet("QScrollArea { background: #fefefe; border: 1px solid #ccc; border-radius: 5px; }")
 
-        self.layout.addWidget(self.chat_display) # Ajout de la zone d'affichage au layout
+        self.chat_container = QWidget()
+        self.chat_layout = QVBoxLayout()
+        self.chat_layout.setAlignment(Qt.AlignTop)  # 🔥 aligne en haut
+        self.chat_container.setLayout(self.chat_layout)
+
+        self.chat_scroll.setWidget(self.chat_container)
+        self.layout.addWidget(self.chat_scroll)
+
+        #self.chat_display = QTextEdit() # Zone d'affichage du chat
+        #self.chat_display.setReadOnly(True) # Rendre la zone d'affichage en lecture seule
+
+        #self.layout.addWidget(self.chat_display) # Ajout de la zone d'affichage au layout
 
         input_layout = QHBoxLayout() # Création du layout horizontal pour les entrées
         self.input_field = QLineEdit() # Champ de saisie pour l'utilisateur
@@ -97,7 +109,7 @@ class ChatWindow(QWidget):
         self.summary_box = None  # 🔥 pour mémoriser la box actuelle
         self.fade_animation = None
 
-        self.append_collapsible_summary("<b>Résumé de test</b>")
+        #self.append_collapsible_summary("<b>Résumé de test</b>")
         self.dots_timer = QTimer()
         self.dots_timer.timeout.connect(self._animate_loading_text)
         self.dots_state = 0
@@ -108,10 +120,77 @@ class ChatWindow(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Charger un historique", "", "Fichiers JSON (*.json)")
         if file_path:
             self.controller.load_history_from_file(file_path)
+    def fade_in_widget(self, widget, duration=800):
+        widget.setVisible(True) 
+        effect = QGraphicsOpacityEffect(widget)
+        widget.setGraphicsEffect(effect)
+
+        animation = QPropertyAnimation(effect, b"opacity", widget)
+        animation.setDuration(duration)
+        animation.setStartValue(0.0)
+        animation.setEndValue(1.0)
+        animation.start()
+
+        # 🔐 Stockage fort (pas juste une propriété du widget) pour éviter la suppression
+        if not hasattr(self, "_active_animations"):
+            self._active_animations = []
+        self._active_animations.append(animation)
+
+        # 🔁 Nettoyage automatique une fois l'animation terminée
+        animation.finished.connect(lambda: self._active_animations.remove(animation))
+
+
+    def _slide_and_fade_in(self, widget, duration=800):
+        #widget.setVisible(True)
+        widget.adjustSize()  # 🔧 important pour bien récupérer sizeHint()
+
+        full_height = widget.sizeHint().height()
+
+        effect = QGraphicsOpacityEffect(widget)
+        widget.setGraphicsEffect(effect)
+
+        fade = QPropertyAnimation(effect, b"opacity", widget)
+        fade.setDuration(duration)
+        fade.setStartValue(0.0)
+        fade.setEndValue(1.0)
+
+        widget.setMaximumHeight(0)  # 🧨 réduit à 0 pour slider depuis rien
+
+        slide = QPropertyAnimation(widget, b"maximumHeight", widget)
+        slide.setDuration(duration)
+        slide.setStartValue(0)
+        slide.setEndValue(full_height)
+        slide.setEasingCurve(QEasingCurve.OutCubic)
+
+        group = QParallelAnimationGroup()
+        group.addAnimation(fade)
+        group.addAnimation(slide)
+
+        # 🔐 Sauvegarde pour ne pas garbage collect l’anim
+        if not hasattr(self, "_active_animations"):
+            self._active_animations = []
+        self._active_animations.append(group)
+
+        def _on_finished():
+            widget.setMaximumHeight(16777215)  # 🔓 Qt max height
+            self._active_animations.remove(group)
+
+        group.finished.connect(_on_finished)
+        group.start()
+
+
     # Fonction pour ajouter un message à la zone d'affichage du chat
     def append_message(self, sender, content):
-        self.chat_display.append(f"<b>{sender}:</b> {content}")
-        self.chat_display.verticalScrollBar().setValue(self.chat_display.verticalScrollBar().maximum())
+        label = QLabel(f"<b>{sender}:</b> {content}")
+        label.setTextFormat(Qt.TextFormat.RichText)
+        label.setWordWrap(True)
+        label.setStyleSheet("padding: 6px;")
+        self.chat_layout.addWidget(label)
+
+        self.fade_in_widget(label)
+        QTimer.singleShot(100, lambda: self.chat_scroll.verticalScrollBar().setValue(
+            self.chat_scroll.verticalScrollBar().maximum()))
+
     # Fonction pour afficher un message de chargement
     def show_loading(self):
         self.dots_state = 0
@@ -134,37 +213,54 @@ class ChatWindow(QWidget):
     # Fonction pour afficher la réponse de l'assistant
     def display_response(self, markdown_text):
         html = markdown2.markdown(markdown_text)
-        self.chat_display.append(f"<b>Assistant:</b><br>{html}")
+        label = QLabel(f"<b>Assistant:</b> {html}")
+        label.setTextFormat(Qt.TextFormat.RichText)
+        label.setWordWrap(True)
+        label.setStyleSheet("padding: 6px;")
+        self.chat_layout.addWidget(label)
+
+        self.fade_in_widget(label)
+        QTimer.singleShot(100, lambda: self.chat_scroll.verticalScrollBar().setValue(
+            self.chat_scroll.verticalScrollBar().maximum()))
     # Fonction pour le résumé 
     def append_collapsible_summary(self, html_summary: str):
         if self.summary_box is None:
             self.summary_box = CollapsibleBox("📊 Résumé")
 
-            # Contenu scrollable
-            scroll = QScrollArea()
-            scroll.setWidgetResizable(True)
-            scroll.setMinimumHeight(10)  #  ajustable selon ton besoin
-            scroll.setStyleSheet("QScrollArea { border: none; }")  # clean look
-
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
-            label.setTextInteractionFlags(Qt.TextSelectableByMouse)  # optionnel : permet de copier
+            label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             label.setText(html_summary)
 
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setStyleSheet("QScrollArea { border: none; }")
             scroll.setWidget(label)
 
-            self.summary_box.setContent(scroll)
+            # ⬇️ Emballage dans un frame (fixe le problème de layout durant l’anim)
+            wrapper = QFrame()
+            layout = QVBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(scroll)
+            wrapper.setLayout(layout)
+
+            self.summary_box.setContent(wrapper)
             self.layout.insertWidget(self.layout.count() - 2, self.summary_box)
+
+            QTimer.singleShot(0, lambda: self._slide_and_fade_in(self.summary_box))  # ⬅️ Animation ici
         else:
-            scroll = self.summary_box.content_area.layout().itemAt(0).widget()
+            scroll = self.summary_box.content_area.layout().itemAt(0).widget().layout().itemAt(0).widget()
             label = scroll.widget()
             label.setText(html_summary)
+
         self.summary_box.content_area.setVisible(True)
         self.summary_box.toggle_button.setChecked(True)
         self.summary_box.toggle_button.setArrowType(Qt.DownArrow)
+
     def set_controller(self, controller):
         self.controller = controller  # accès au contrôleur depuis la vue
+
     def append_matplotlib_plot(self, fig):
         canvas = FigureCanvas(fig)
         canvas.setMinimumHeight(300)  # Tu peux ajuster

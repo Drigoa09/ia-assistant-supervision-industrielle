@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QToolButton, QWidget, QSizePolicy
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve
 
 
 class CollapsibleBox(QGroupBox):
@@ -16,6 +16,9 @@ class CollapsibleBox(QGroupBox):
 
         self.content_area = QWidget()
         self.content_area.setVisible(False)
+        self.content_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.content_area.setMaximumHeight(0)  # 🔥 important pour anim correcte
+
 
         layout = QVBoxLayout()
         layout.addWidget(self.toggle_button)
@@ -23,10 +26,28 @@ class CollapsibleBox(QGroupBox):
         self.setLayout(layout)
 
     def toggle_content(self):
-        visible = not self.content_area.isVisible()
-        self.content_area.setVisible(visible)
-        self.toggle_button.setArrowType(Qt.DownArrow if visible else Qt.RightArrow)
-        self.adjustSize()
+        expanded = self.content_area.isVisible()
+        direction = not expanded  # True si on va ouvrir
+
+        self.toggle_button.setArrowType(Qt.DownArrow if direction else Qt.RightArrow)
+
+        if direction:
+            self.content_area.setVisible(True)
+            self.content_area.adjustSize()
+            target_height = self.content_area.sizeHint().height()
+        else:
+            target_height = 0
+
+        self.animation = QPropertyAnimation(self.content_area, b"maximumHeight")
+        self.animation.setDuration(300)
+        self.animation.setStartValue(self.content_area.height())
+        self.animation.setEndValue(target_height)
+        self.animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.animation.start()
+
+        if not direction:
+            # Cache le widget à la fin de l’animation
+            self.animation.finished.connect(lambda: self.content_area.setVisible(False))
 
     def setContent(self, content_widget):
         content_layout = QVBoxLayout()
