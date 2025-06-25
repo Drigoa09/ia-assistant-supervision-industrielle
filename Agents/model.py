@@ -1,7 +1,6 @@
 from langchain_mistralai import ChatMistralAI
 import os
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
 
 #Chargement des variables d'environnement
 load_dotenv()

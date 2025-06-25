@@ -10,6 +10,9 @@ from Tools_nodes.continuer_node import continuer_node, maybe_route_to_treatment
 from Graph_Agents.treatment_agent import treatment_agent
 from Tools_nodes.treatment_node import treatment_node
 
+from Graph_Agents.generateur_agent import generer_reponse
+from Tools_nodes.generateur_node import generateur_node
+
 from OrderState import OrderState
 
 
@@ -31,6 +34,9 @@ graph_builder.add_node("Formulateur de requêtes de traitement", treatment_agent
 graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node)
 graph_builder.add_node("Executeur de requêtes de traitement", treatment_node)
 
+graph_builder.add_node("Générateur de réponse", generer_reponse)
+graph_builder.add_node("Application du générateur", generateur_node)
+
 # The chatbot will always go to the human next.
 
 graph_builder.add_conditional_edges("Humain", maybe_exit_human_node)
@@ -41,6 +47,9 @@ graph_builder.add_edge("Formulateur de demandes d'informations", "Executeur de d
 graph_builder.add_edge("Executeur de demandes d'informations", "Indicateur de l'existance de traitements supplémentaires")
 graph_builder.add_edge("Formulateur de requêtes de traitement", "Executeur de requêtes de traitement")
 graph_builder.add_edge("Executeur de requêtes de traitement", "Indicateur de l'existance de traitements supplémentaires")
+
+graph_builder.add_edge("Générateur de réponse", "Application du générateur")
+graph_builder.add_edge("Application du générateur", "Humain")
 
 # Start with the chatbot again.
 graph_builder.add_edge(START, "Humain")

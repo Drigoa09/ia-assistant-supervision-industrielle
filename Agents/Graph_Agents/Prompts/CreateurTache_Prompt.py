@@ -21,6 +21,8 @@ Ensuite, il faut calculer la somme des temps de cycle divisée par la somme des 
 '''
 #Exemples d'entrées et sorties de l'agent
 EXEMPLES = '''
+Inspire toi des exemples pour élaborer tes réponses.
+En général, on filtre les dataFrames à la fin. Si tu ne le fais pas, on te débranche du DataCenter
 
 Exemple 1 :
 Trouver les programmes en fonction de leur cycle associé.
@@ -52,7 +54,7 @@ INFORMATION_CHERCHER = 'Chercher les outils et les temps de coupe' TRAITEMENT = 
 Exemple 6 :
 Quelles sont les 3 alarmes les plus récurrentes ?
 
-INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières alarmes"]
+INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières occurences des alarmes"]
 '''
 #Prompt donné à l'agent
 AGENT_JOB = f'''
@@ -69,6 +71,8 @@ Documentation : {DOCUMENTATION}
 
 Par défaut, si seul la liste des programmes est demandée à chercher, il faut également demander à chercher leur cycle associé.
 Pour, les outils, il faut aussi demander leur temps de coupe associé.
+De même pour les alarmes
+Vérifie bien qu'il y a suffisamment d'informations demandées pour accomplir les traitements voulus.
 
 Chaque programme est associé à un cycle.
 Chaque outil est associé à un temps de coupe.
