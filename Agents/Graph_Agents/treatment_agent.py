@@ -46,10 +46,11 @@ def treatment_agent(state: OrderState) -> OrderState:
 
         Tu essaies de répondre aux questions avec les outils qui te sont donnés, pas à pas.
 
-        La question est : {state['question']}
-
         Les programmes sont choisis avant le lancement des cycles.
+        Les outils sont choisis avant le lancement des coupes
         Les alarmes se produisent durant l'exécution d'un programme avec son cycle associé
+
+        Lorsque des variables sont choisies avant la définition d'une variable, il faut choisir l'option 'avant' comme argument de INFORMATION_EN_FONCTION_AUTRE
 
         Tu as accès aux clés de dataFrame : \n
 

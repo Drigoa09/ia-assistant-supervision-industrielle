@@ -34,6 +34,8 @@ def generer_reponse(state: OrderState) -> OrderState:
 
     Tu dois choisir lesquelles des DataFrames il faut afficher.
     L'humain qui regardera n'aime pas voir des informations inutiles. Il est con et s'énerve vite.
+    Fait en sorte de donner le plus d'informations possible en donnant le moins de DataFrame possibles.
+    L'humain est con et n'aime pas lire trop de choses. Va à l'essentiel, putain !
     '''
 
     request = model_with_structured_output.invoke([AGENT_JOB])

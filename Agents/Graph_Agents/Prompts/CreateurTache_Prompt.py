@@ -54,7 +54,7 @@ INFORMATION_CHERCHER = 'Chercher les outils et les temps de coupe' TRAITEMENT = 
 Exemple 6 :
 Quelles sont les 3 alarmes les plus récurrentes ?
 
-INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières alarmes"]
+INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières occurences des alarmes"]
 '''
 #Prompt donné à l'agent
 AGENT_JOB = f'''

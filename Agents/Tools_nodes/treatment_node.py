@@ -77,7 +77,7 @@ def n_premiers(dataFrames, args):
 
     dataFrame = dataFrames[args[0].numero_dataFrame].dataFrame
 
-    new_dataFrames.append(DataFrameRole(dataFrame.head(int(args[1])), dataFrames[args[0].numero_dataFrame].role + " Filtré par n_premiers."))
+    new_dataFrames.append(DataFrameRole(dataFrame.head(int(args[1])), dataFrames[args[0].numero_dataFrame].role + " contenant les " + str(args[1]) + " premiers éléments"))
 
     return new_dataFrames
 
@@ -107,7 +107,7 @@ def filtrer_comparaison(dataFrames, args):
     else:
         sup = args[2]
 
-    if is_valid_date(inf, "%H:%M:%S") or is_valid_date(sup, "%H:%M:%S"):
+    if (args[1] != "-inf" and is_valid_date(inf, "%H:%M:%S")) or (args[2] != "+inf" and is_valid_date(sup, "%H:%M:%S")):
         df = dataFrames[args[0].numero_dataFrame].dataFrame
         
         if inf != -float('inf'):
@@ -115,8 +115,8 @@ def filtrer_comparaison(dataFrames, args):
         if sup != float('inf'):
             df = df[pd.to_datetime(dataFrames_columns, utc=True).dt.time < pd.to_datetime(sup).time()]
     else:
-        df = dataFrames[args[0].numero_dataFrame].dataFrame[inf < dataFrames_columns]
-        df = df[dataFrames_columns < sup]
+        df = dataFrames[args[0].numero_dataFrame].dataFrame[float(inf) < dataFrames_columns]
+        df = df[dataFrames_columns < float(sup)]
 
     new_dataFrames.append(DataFrameRole(df, dataFrames[args[0].numero_dataFrame].role + " Filtré par la fonction filtrer_comparaison"))
 
@@ -129,7 +129,7 @@ def plus_occurent(dataFrames, args):
     for arg in args:
         frame = dataFrames[arg.numero_dataFrame].dataFrame[arg.cle_dataFrame].value_counts().to_frame()
         frame.columns = ["Occurences"]
-        new_dataFrames.append(DataFrameRole(frame, dataFrames[arg.numero_dataFrame].role))
+        new_dataFrames.append(DataFrameRole(frame, dataFrames[arg.numero_dataFrame].role + " avec les occurences"))
 
     return new_dataFrames
 
