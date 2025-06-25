@@ -18,7 +18,24 @@ class CollapsibleBox(QGroupBox):
         self.content_area.setVisible(False)
         self.content_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.content_area.setMaximumHeight(0)  # 🔥 important pour anim correcte
-
+        self.toggle_button.setStyleSheet("""
+            QToolButton {
+                background-color: #E3F2FD;
+                border: 1px solid #90CAF9;
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-weight: bold;
+                color: #1565C0;
+                text-align: left;
+            }
+            QToolButton:hover {
+                background-color: #BBDEFB;
+            }
+            QToolButton:pressed {
+                background-color: #90CAF9;
+            }
+        """)
+        
 
         layout = QVBoxLayout()
         layout.addWidget(self.toggle_button)

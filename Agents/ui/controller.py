@@ -73,7 +73,10 @@ class ChatController:
             raw_history = json.load(f)
 
         self.history = []
-        self.view.chat_display.clear()
+        while self.view.chat_layout.count():
+            child = self.view.chat_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
         last_user_msg = None
         last_ai_msg = None

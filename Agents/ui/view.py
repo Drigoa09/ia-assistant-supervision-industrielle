@@ -1,26 +1,19 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QLineEdit, QPushButton, QHBoxLayout, QApplication, QFileDialog, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame, QTextBrowser, QLineEdit, QPushButton, QHBoxLayout, QApplication, QFileDialog, QLabel, QSpacerItem, QSizePolicy, QScrollArea, QGraphicsOpacityEffect, QGraphicsDropShadowEffect
 import markdown2
 from ui.CollapsibleBox import CollapsibleBox 
 from PySide6.QtCore import Qt, QTimer, QSize, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve
-from PySide6.QtGui import QMovie
+from PySide6.QtGui import QMovie, QPixmap
 import os
 from PySide6.QtCore import Slot
 from langchain_core.messages import AIMessage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-"""         self.chat_display.setStyleSheet(
-            QTextEdit {
-                background-color: #fefefe;
-                font-family: Consolas, monospace;
-                font-size: 13px;
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }) """
+
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
     # Constructeur de la fenêtre de chat
     def __init__(self, controller):
         super().__init__() # Appel du constructeur de QWidget
+        self._active_animations = []
         self.setWindowTitle("Assistant Industriel 🤖") # Titre de la fenêtre
         self.setMinimumSize(600, 500) # Taille minimale de la fenêtre
         self.controller = controller # Stockage du contrôleur
@@ -33,6 +26,7 @@ class ChatWindow(QWidget):
         self.load_button = QPushButton("📂 Charger l'historique")
         self.save_button.clicked.connect(lambda: self.controller.save_history_to_file())
         self.load_button.clicked.connect(lambda: self.controller.open_history_file_dialog())
+
         action_layout.addWidget(self.save_button)
         action_layout.addWidget(self.load_button)
 
@@ -113,6 +107,87 @@ class ChatWindow(QWidget):
         self.dots_timer = QTimer()
         self.dots_timer.timeout.connect(self._animate_loading_text)
         self.dots_state = 0
+        style = """
+        /* Bouton générique */
+        QPushButton {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 90px;
+        }
+
+        /* Effet hover (zoom) */
+        QPushButton:hover {
+            padding: 9px 15px;
+        }
+
+        /* Bouton Envoyer (Bleu) */
+        QPushButton#send_button {
+            background-color: #2196F3;
+            color: white;
+        }
+        QPushButton#send_button:hover {
+            background-color: #1976D2;
+        }
+        QPushButton#send_button:pressed {
+            background-color: #0D47A1;
+        }
+
+        /* Bouton Quitter (Rouge) */
+        QPushButton#quit_button {
+            background-color: #f44336;
+            color: white;
+        }
+        QPushButton#quit_button:hover {
+            background-color: #d32f2f;
+        }
+        QPushButton#quit_button:pressed {
+            background-color: #b71c1c;
+        }
+
+        /* Boutons du haut (Gris/bleu clair) */
+        QPushButton#load_button,
+        QPushButton#save_button,
+        summary_box.toggle_button {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        QPushButton#load_button:hover,
+        QPushButton#save_button:hover {
+            background-color: #bdbdbd;
+        }
+        QPushButton#load_button:pressed,
+        QPushButton#save_button:pressed {
+            background-color: #9e9e9e;
+        }
+        """
+        self.input_field.setStyleSheet("""
+            QLineEdit {
+                padding: 8px 12px;
+                border: 2px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
+                background-color: #ffffff;
+                color: #333;
+            }
+
+            QLineEdit:focus {
+                border: 2px solid #2196F3;
+                background-color: #f0f8ff;
+            }
+        """)
+        for btn in [self.send_button, self.quit_button, self.save_button, self.load_button]:
+            btn.setCursor(Qt.PointingHandCursor)
+
+        self.setStyleSheet(style)
+
+        self.send_button.setObjectName("send_button")
+        self.quit_button.setObjectName("quit_button")
+        self.load_button.setObjectName("load_button")
+        self.save_button.setObjectName("save_button")
+
         #self.show_loading()
         #QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
 
@@ -132,8 +207,6 @@ class ChatWindow(QWidget):
         animation.start()
 
         # 🔐 Stockage fort (pas juste une propriété du widget) pour éviter la suppression
-        if not hasattr(self, "_active_animations"):
-            self._active_animations = []
         self._active_animations.append(animation)
 
         # 🔁 Nettoyage automatique une fois l'animation terminée
@@ -177,10 +250,52 @@ class ChatWindow(QWidget):
 
         group.finished.connect(_on_finished)
         group.start()
+    def _create_chat_bubble(self, icon_path, html_text):
+
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(10)
+
+        # 🖼️ Icône à gauche
+        icon_label = QLabel()
+        icon_pixmap = QPixmap(icon_path)
+        if not icon_pixmap.isNull():
+            icon_label.setPixmap(icon_pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        icon_label.setFixedSize(36, 36)
+        icon_label.setStyleSheet("background-color: #E0F7FA; border-radius: 6px; padding: 2px;")
+        layout.addWidget(icon_label)
+
+        # 🗨️ Bulle de texte
+        bubble = QLabel(html_text)
+        bubble.setTextFormat(Qt.TextFormat.RichText)
+        bubble.setWordWrap(True)
+        bubble.setTextInteractionFlags(Qt.TextSelectableByMouse)  # texte sélectionnable
+        bubble.setStyleSheet("""
+            QLabel {
+                background-color: #000000;
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 13px;
+            }
+        """)
+        bubble.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        layout.addWidget(bubble, 1)
+
+        return container
+
 
 
     # Fonction pour ajouter un message à la zone d'affichage du chat
     def append_message(self, sender, content):
+        user_icon = os.path.join(os.path.dirname(__file__), "assets", "user_icon.png")
+        bubble = self._create_chat_bubble(user_icon, f"<b>{sender}:</b> {content}")
+        self.chat_layout.addWidget(bubble)
+        self.fade_in_widget(bubble)
+        QTimer.singleShot(100, lambda: self.chat_scroll.verticalScrollBar().setValue(
+            self.chat_scroll.verticalScrollBar().maximum()))
+
+    """ def append_message(self, sender, content):
         label = QLabel(f"<b>{sender}:</b> {content}")
         label.setTextFormat(Qt.TextFormat.RichText)
         label.setWordWrap(True)
@@ -189,7 +304,7 @@ class ChatWindow(QWidget):
 
         self.fade_in_widget(label)
         QTimer.singleShot(100, lambda: self.chat_scroll.verticalScrollBar().setValue(
-            self.chat_scroll.verticalScrollBar().maximum()))
+            self.chat_scroll.verticalScrollBar().maximum())) """
 
     # Fonction pour afficher un message de chargement
     def show_loading(self):
@@ -213,13 +328,36 @@ class ChatWindow(QWidget):
     # Fonction pour afficher la réponse de l'assistant
     def display_response(self, markdown_text):
         html = markdown2.markdown(markdown_text)
-        label = QLabel(f"<b>Assistant:</b> {html}")
-        label.setTextFormat(Qt.TextFormat.RichText)
-        label.setWordWrap(True)
-        label.setStyleSheet("padding: 6px;")
-        self.chat_layout.addWidget(label)
 
-        self.fade_in_widget(label)
+        # 🔎 Vérifie si c'est du HTML complexe (tableau, div, etc.)
+        if "<table" in html or "<div" in html:
+            browser = QTextBrowser()
+            browser.setHtml(f"<b>Assistant:</b><br>{html}")
+            browser.setOpenExternalLinks(True)
+            browser.setStyleSheet("""
+                QTextBrowser {
+                    background-color: #1e1e1e;
+                    color: white;
+                    border: none;
+                    padding: 6px;
+                    border-radius: 6px;
+                }
+            """)
+            content_widget = browser
+        else:
+            label = QLabel(f"<b>Assistant:</b> {html}")
+            label.setTextFormat(Qt.TextFormat.RichText)
+            label.setWordWrap(True)
+            label.setStyleSheet("padding: 6px;")
+            content_widget = label
+
+        # 💬 Crée une bulle avec icône
+        icon_path = os.path.join(os.path.dirname(__file__), "assets", "robot_icon.png")
+        bubble = self._create_chat_bubble(icon_path, f"<b>Assistant:</b> {html}")
+        self.chat_layout.addWidget(bubble)
+        self.fade_in_widget(bubble)
+
+        # ⬇️ Scroll vers le bas
         QTimer.singleShot(100, lambda: self.chat_scroll.verticalScrollBar().setValue(
             self.chat_scroll.verticalScrollBar().maximum()))
     # Fonction pour le résumé 
