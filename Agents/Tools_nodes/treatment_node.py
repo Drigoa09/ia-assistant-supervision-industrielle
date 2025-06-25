@@ -20,6 +20,17 @@ def creer_graphique(dataFrames, args, args_restants):
 
     return fig
 
+def choisir_dataFrame(dataFrames, args):
+
+    new_dataFrames = []
+
+    for arg in args:
+        new_dataFrames.append(dataFrames[arg.numero_dataFrame])
+
+    print(new_dataFrames)
+
+    return new_dataFrames
+
 """
 Les outils utilisés sont inclus dans des temps de coupe.
 Les temps de coupe sont inclus dans des programmes
@@ -28,7 +39,7 @@ Les programmes sont inclus dans des temps de cycles.
 
 def filtrer_valeur(dataFrames, args):
 
-    new_dataFrames = []
+    new_dataFrames = dataFrames
 
     programme_cible = args[0]
     
@@ -42,10 +53,15 @@ def filtrer_valeur(dataFrames, args):
     #  Filtrer les cycles de coupe inclus dans les cycles du programme cible
     outils_utilisés = set()
     for v in cycles_coupe.to_dict(orient = "index").values():
-        start_coupe = v["start"]
+
+        if "start" in v:
+            start_coupe = v["start"]
+        else:
+            start_coupe = str(v["timestamp"])
+
         outil = v[args[2].cle_dataFrame]
         for start_prog, end_prog in cycles_programme_cible:
-            if (start_prog <= start_coupe <= end_prog) or (start_coupe <= start_prog <= v["end"]) and outil is not None:
+            if (start_prog <= start_coupe <= end_prog) or ("start" in v and start_coupe <= start_prog <= v["end"]) and outil is not None:
                 outils_utilisés.add(outil)
                 break
 
@@ -57,7 +73,7 @@ def filtrer_valeur(dataFrames, args):
 
 def n_premiers(dataFrames, args):
 
-    new_dataFrames = []
+    new_dataFrames = dataFrames
 
     dataFrame = dataFrames[args[0].numero_dataFrame].dataFrame
 
@@ -77,7 +93,7 @@ def is_valid_date(s: str, fmt: str) -> bool:
 
 def filtrer_comparaison(dataFrames, args):
     
-    new_dataFrames = []
+    new_dataFrames = dataFrames
 
     dataFrames_columns = dataFrames[args[0].numero_dataFrame].dataFrame[args[0].cle_dataFrame]
 
@@ -108,7 +124,7 @@ def filtrer_comparaison(dataFrames, args):
 
 def plus_occurent(dataFrames, args):
 
-    new_dataFrames = []
+    new_dataFrames = dataFrames
 
     for arg in args:
         frame = dataFrames[arg.numero_dataFrame].dataFrame[arg.cle_dataFrame].value_counts().to_frame()
@@ -118,7 +134,7 @@ def plus_occurent(dataFrames, args):
     return new_dataFrames
 
 # Extraire les intervalles de cycle
-def extraire_intervalles(df_source, df_contextes, variables_contextes, seuil_pause=5):
+def extraire_intervalles(df_source, df_contextes, variables_contextes, moment, seuil_pause=5):
     df_source = df_source.copy()
     df_source["time_diff"] = df_source["timestamp"].diff().dt.total_seconds()
     split_indices = df_source.index[df_source["time_diff"] > seuil_pause].tolist()
@@ -141,9 +157,13 @@ def extraire_intervalles(df_source, df_contextes, variables_contextes, seuil_pau
             df_contexte = df_contextes[j]
             nom_variable = variables_contextes[j]
 
-            matching = df_contexte[df_contexte["timestamp"] < start]
-            
-            programme = str(matching.iloc[-1][nom_variable]) if not matching.empty else None
+            if moment == "avant":
+                matching = df_contexte[df_contexte["timestamp"] < start]
+                programme = str(matching.iloc[-1][nom_variable]) if not matching.empty else None
+            else: #moment == "pendant" Comportement par défaut
+                programme = df_contexte[df_contexte["timestamp"] > start]
+                programme = programme[programme["timestamp"] < end]
+
             periodes[f"interval_{i}"][nom_variable] = programme
 
     return periodes
@@ -152,11 +172,12 @@ import pandas as pd
     
 def exprimer_information_en_fonction_autre(dataFrames, args):
 
-    new_dataFrames = []
+    new_dataFrames = dataFrames
 
     arg0 = args[0]
+    arg1 = args[1]
 
-    df_tempsCycle = dataFrames[arg0.numero_dataFrame].dataFrame
+    df_tempsCycle = dataFrames[arg1.numero_dataFrame].dataFrame
 
     if df_tempsCycle is None or df_tempsCycle.empty:
         return "Aucun cycle détecté."
@@ -166,13 +187,13 @@ def exprimer_information_en_fonction_autre(dataFrames, args):
     names = []
 
     role = ""
-    for field_contexte in args[1:]:
+    for field_contexte in args[2:]:
         dfs_programmes.append(dataFrames[field_contexte.numero_dataFrame].dataFrame)
         names.append(field_contexte.cle_dataFrame)
-        role += dataFrames[field_contexte.numero_dataFrame].role
+        role += dataFrames[field_contexte.numero_dataFrame].role + " associé à " + dataFrames[arg1.numero_dataFrame].role
 
     # Découpage des cycles en intervalles
-    periodes = extraire_intervalles(df_tempsCycle, dfs_programmes, names)
+    periodes = extraire_intervalles(df_tempsCycle, dfs_programmes, names, arg0)
 
     # Affichage final
     df_final = pd.DataFrame.from_dict(periodes, orient="index")
@@ -196,37 +217,35 @@ def treatment_node(state: OrderState) -> OrderState:
         if traitement_format is None:
             raise ValueError("❌ traitement_format est totalement absent, même en fallback ! Clés disponibles : " + str(state.keys()))
 
-        fonctions_appelees = traitement_format.fonctions_appelees
-
         args_restants = []
         new_dataFrames = []
 
-        for fonction_appelee in fonctions_appelees:
+        fonction_appelee = traitement_format
             
-            if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
-                
-                new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
+        if fonction_appelee.fonction_appelee == fonctions_existantes.PLUS_OCCURENT:
+            
+            new_dataFrames += plus_occurent(state['dataFrames'], fonction_appelee.args)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.INFORMATION_EN_FONCTION_AUTRE:
+        elif fonction_appelee.fonction_appelee == fonctions_existantes.INFORMATION_EN_FONCTION_AUTRE:
 
-                new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args)
+            new_dataFrames += exprimer_information_en_fonction_autre(state['dataFrames'], fonction_appelee.args)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_VALEUR:
+        elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_VALEUR:
 
-                new_dataFrames += filtrer_valeur(state['dataFrames'], fonction_appelee.args)
+            new_dataFrames += filtrer_valeur(state['dataFrames'], fonction_appelee.args)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
-                
-                #new_dataFrames += creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
-                state['figure'] = creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
+        elif fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
+            
+            #new_dataFrames += creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
+            state['figure'] = creer_graphique(state['dataFrames'], fonction_appelee.args, args_restants)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_COMPARAISON:
+        elif fonction_appelee.fonction_appelee == fonctions_existantes.FILTRER_COMPARAISON:
 
-                new_dataFrames += filtrer_comparaison(state['dataFrames'], fonction_appelee.args)
+            new_dataFrames += filtrer_comparaison(state['dataFrames'], fonction_appelee.args)
 
-            elif fonction_appelee.fonction_appelee == fonctions_existantes.N_PREMIERS:
+        elif fonction_appelee.fonction_appelee == fonctions_existantes.N_PREMIERS:
 
-                new_dataFrames += n_premiers(state['dataFrames'], fonction_appelee.args)
+            new_dataFrames += n_premiers(state['dataFrames'], fonction_appelee.args)
 
 
         state['dataFrames'] = new_dataFrames
