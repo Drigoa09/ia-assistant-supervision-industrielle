@@ -6,7 +6,7 @@ from Graph_Agents.human_node import human_node, maybe_exit_human_node
 from Graph_Agents.CreateurTache import createur_tache
 from Graph_Agents.Extract_docs_agent import extract_docs_agent
 from Tools_nodes.database_node import database_agent
-from Tools_nodes.continuer_node import continuer_node, maybe_route_to_treatment
+from Tools_nodes.continuer_node import tos
 from Graph_Agents.treatment_agent import treatment_agent
 from Tools_nodes.treatment_node import treatment_node
 
@@ -15,6 +15,7 @@ from Tools_nodes.generateur_node import generateur_node
 
 from OrderState import OrderState
 
+continuer_node = tos()
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
@@ -31,7 +32,7 @@ graph_builder.add_node("Créateur de tâches", createur_tache)
 graph_builder.add_node("Formulateur de demandes d'informations", extract_docs_agent)
 graph_builder.add_node("Executeur de demandes d'informations", database_agent)
 graph_builder.add_node("Formulateur de requêtes de traitement", treatment_agent)
-graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node)
+graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node.continuer_node)
 graph_builder.add_node("Executeur de requêtes de traitement", treatment_node)
 
 graph_builder.add_node("Générateur de réponse", generer_reponse)
@@ -40,7 +41,7 @@ graph_builder.add_node("Application du générateur", generateur_node)
 # The chatbot will always go to the human next.
 
 graph_builder.add_conditional_edges("Humain", maybe_exit_human_node)
-graph_builder.add_conditional_edges("Indicateur de l'existance de traitements supplémentaires", maybe_route_to_treatment)
+graph_builder.add_conditional_edges("Indicateur de l'existance de traitements supplémentaires", continuer_node.maybe_route_to_treatment)
 
 graph_builder.add_edge("Créateur de tâches", "Formulateur de demandes d'informations")
 graph_builder.add_edge("Formulateur de demandes d'informations", "Executeur de demandes d'informations")

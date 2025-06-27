@@ -3,6 +3,7 @@ INFORMATIONS_POSSIBLES = '''
     - Les programmes
     - Les cycles
     - Les outils
+    - Les alarmes
 '''
 #Traitements qu'il est possible de faire à partir des données de la base de donnée
 TRAITEMENTS_POSSIBLES = '''

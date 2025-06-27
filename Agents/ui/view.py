@@ -273,7 +273,7 @@ class ChatWindow(QWidget):
         bubble.setTextInteractionFlags(Qt.TextSelectableByMouse)  # texte sélectionnable
         bubble.setStyleSheet("""
             QLabel {
-                background-color: #000000;
+                background-color: #FFFFFF;
                 border-radius: 8px;
                 padding: 8px;
                 font-size: 13px;

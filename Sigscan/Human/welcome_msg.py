@@ -1,0 +1,1 @@
+WELCOME_MSG = "Bienvenue ! Je suis une IA spécialisée dans l'intéraction avec les bases de données Sigscan"

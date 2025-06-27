@@ -17,7 +17,11 @@ model_with_structured_output = model_mistral_medium.with_structured_output(Choix
 
 def generer_reponse(state: OrderState) -> OrderState:
     
-    AGENT_JOB = f'''Tu es un agent chargé de répondre à la question {state["question"]}
+    AGENT_JOB = f'''Tu es un agent chargé de répondre à la question {state["question"]}.
+
+    Voici ce qui a été fait avant que tu reçoives les informations :*
+    Information cherchée : {state['information_chercher']}
+    Traitements : {state['traitements']}
 
     Pour cela tu as plusieurs données disponibles. Ces données sont représentées par des DataFrames
 

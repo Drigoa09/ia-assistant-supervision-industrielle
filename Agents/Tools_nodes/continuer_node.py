@@ -1,24 +1,26 @@
 from typing import Literal
 from OrderState import OrderState
 
-def continuer_node(state: OrderState) -> OrderState:
-    """The chatbot itself. A wrapper around the model's own chat interface."""
+class tos():
 
-    state['i'] += 1
-    
-    if state['i'] < len(state['traitements']):
-        state['traitement'] = state['traitements'][state['i']]
+    def continuer_node(self, state: OrderState) -> OrderState:
+        """The chatbot itself. A wrapper around the model's own chat interface."""
 
-    return state
+        state['i'] += 1
+        
+        if state['i'] < len(state['traitements']):
+            state['traitement'] = state['traitements'][state['i']]
 
-def maybe_route_to_treatment(state: OrderState) -> Literal["Formulateur de requêtes de traitement", "Générateur de réponse", "Humain"]:
-    """Route to the chatbot, unless it looks like the user is exiting."""
+        return state
 
-    # When the chatbot returns tool_calls, route to the "tools" node.
+    def maybe_route_to_treatment(self, state: OrderState) -> Literal["Formulateur de requêtes de traitement", "Générateur de réponse", "Humain"]:
+        """Route to the chatbot, unless it looks like the user is exiting."""
 
-    if state['traitements'] == []:
-        return "Humain"
-    elif state['i'] < len(state['traitements']):
-        return "Formulateur de requêtes de traitement"
-    else:
-        return "Générateur de réponse"
+        # When the chatbot returns tool_calls, route to the "tools" node.
+
+        if state['traitements'] == []:
+            return "Humain"
+        elif state['i'] < len(state['traitements']):
+            return "Formulateur de requêtes de traitement"
+        else:
+            return "Générateur de réponse"
