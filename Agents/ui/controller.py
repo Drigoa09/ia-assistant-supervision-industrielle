@@ -110,6 +110,7 @@ class ChatController:
             self.load_history_from_file(path)
     def _format_summary(self, state):
         print("📦 State keys: FORMAT_SUMMARY", list(state.keys()))
+        req_init = state.get("request_call_initial", None)
         req = state.get("request_call", None)
         fonctions = state.get("traitement_format", None)
         traitements = state.get("traitements", None)
@@ -119,58 +120,60 @@ class ChatController:
         """ if not req:
             req = state.get("request_call") """
         print("🔍 Résumé de la requête (call) :", req)
-
+        print("🔍 Résumé de la requête (initial) :", req_init)
         if not req:
             return "🤷 Je n’ai pas pu extraire la requête utilisateur."
 
-        lines = [f"📋 <b>Résumé de la requête</b>"]
+        lines = ["📋 <b>Résumé de la requête</b>"]
 
-        # Infos générales
-        lines.append(f"🧠 <b>Question</b> : {req.question_utilisateur}")
-        lines.append(f"🎯 <b>Intention</b> : {req.intention}")
-        lines.append(f"📂 <b>Type de traitement</b> : {req.type_traitement}")
+        
+        lines.append(f"🧠 <b>Question</b> : {req_init.question_utilisateur}")
+        lines.append(f"🎯 <b>Intention</b> : {req_init.intention}")
+        lines.append(f"📂 <b>Type de traitement</b> : {req_init.type_traitement}")
 
-        # Période + Machine + Variables
-        if req.elements_cherches_request:
-            el = req.elements_cherches_request[0]
+        # 👉 Sinon, c’est un choix simple comme Choix(choix_dataFrames=[...])
+        lines.append("✅ <b>DataFrames choisis pour affichage :</b>")
+        for i, elem in enumerate(req.choix_dataFrames):
+            lines.append(f"<div style='margin-left:20px'>📄 <b>   DataFrame {i+1}</b> : Index {elem.numero_dataFrame}</div>")
+        if req_init.elements_cherches_request:
+                el = req_init.elements_cherches_request[0]
 
-            if el.periode_requete:
-                date_from = el.periode_requete.date_from.split("T")[0]
-                date_to = el.periode_requete.date_to.split("T")[0]
-                lines.append(f"🗓️ <b>Période</b> : {date_from} → {date_to}")
+                if el.periode_requete:
+                    date_from = el.periode_requete.date_from.split("T")[0]
+                    date_to = el.periode_requete.date_to.split("T")[0]
+                    lines.append(f"🗓️ <b>Période</b> : {date_from} → {date_to}")
 
-            if el.machine_request:
-                lines.append(f"🏭 <b>Machine</b> : {el.machine_request.name}")
+                if el.machine_request:
+                    lines.append(f"🏭 <b>Machine</b> : {el.machine_request.name}")
 
-            if el.variables_requete:
-                lines.append("🔧 <b>Variables de la requête</b> :")
-                for v in el.variables_requete:
-                    lines.append(f"➡️ <b>{v.role}</b> : {v.alias}")
+                if el.variables_requete:
+                    lines.append("🔧 <b>Variables de la requête</b> :")
+                    for v in el.variables_requete:
+                        lines.append(f"<div style='margin-left:20px'>➡️ <b>{v.role}</b> : {v.alias}</div>")
 
-        # Résultat attendu
-        if req.resultat_attendu:
+        if req_init.resultat_attendu:
             try:
-                lines.append(f"📌 <b>Résultat attendu</b> : {', '.join(req.resultat_attendu)}")
+                lines.append(f"📌 <b>Résultat attendu</b> : {', '.join(req_init.resultat_attendu)}")
             except TypeError:
-                lines.append(f"📌 <b>Résultat attendu</b> : {req.resultat_attendu}")
-
+                lines.append(f"📌 <b>Résultat attendu</b> : {req_init.resultat_attendu}")
         # Traitements effectués
         lines.append("🔧 <b>Traitements effectués</b> :")
         if traitements:
             for i, t in enumerate(traitements):
-                lines.append(f"➡️ Traitement {i + 1} : {t}")
+                lines.append(f"<div style='margin-left:20px'>➡️ Traitement {i + 1} : {t}</div>")
         else:
-            lines.append("➡️ Aucun traitement déclaré")
+            lines.append("<div style='margin-left:20px'>➡️ Aucun traitement déclaré</div>")
+
         # Fonctions appelées
-        lines.append("🛠️ <b>Fonctions appliquées :</b>")
-        if fonctions and hasattr(fonctions, "fonctions_appelees"):
-            for i, f in enumerate(fonctions.fonctions_appelees):
-                args_str = ', '.join(str(arg) for arg in f.args)  # Convertit tous les args en string
-                lines.append(
-                    f"⚙️ <b>Fonction {i + 1}</b> : {f.fonction_appelee.value} avec args {args_str}"
-                )
+        # Fonctions appelées
+        lines.append("<div style='margin-left:0px'>🛠️ <b>Fonctions appliquées :</b></div>")
+
+        if fonctions and hasattr(fonctions, "fonction_appelee"):
+            args_str = ', '.join(str(arg) for arg in fonctions.args)
+            lines.append(f"<div style='margin-left:20px'>⚙️ <b>Fonction</b> : {fonctions.fonction_appelee.value} avec args {args_str}</div>")
         else:
-            lines.append("⚙️ Aucune fonction détectée ou applicable")
+            lines.append("<div style='margin-left:20px'>⚙️ Aucune fonction détectée ou applicable</div>")
+
 
         return "<br>".join(lines)
 

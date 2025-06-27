@@ -14,7 +14,7 @@ def extract_docs_agent(state: OrderState) -> OrderState:
 
     # ✅ Stocker proprement
     state['request_call'] = req
-
+    state['request_call_initial'] = req
     print("➡️ Requête extraite :", req)
     print("📦 State keys: EXTRACT_DOC", list(state.keys()))
     return state

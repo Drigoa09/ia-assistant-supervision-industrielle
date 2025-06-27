@@ -20,7 +20,11 @@ class Worker(QObject):
                 "question": [],
                 "tools_to_answer": [],
                 "finished": False,
-                "Trois": False
+                "Trois": False,
+                "request_call": None,  # Assurez-vous que request_call est initialisé
+                "request_call_initial": None,  # Assurez-vous que request_call_initial est initialisé
+                "traitement_format": None,  # Assurez-vous que traitement_format est initialisé
+                "dataFrames": [],  # Assurez-vous que dataFrames est initialisé
             }
             result = chat_with_human_graph.invoke(state, config={"recursion_limit": 100})
             new_history = result["messages"]

@@ -26,13 +26,15 @@ class OrderState(TypedDict):
 
     #Requête obtenue pour en envoyer une à la base de donnée
     request_call : Annotated[request, 'Contient les requêtes']
-
+    # request_call avant l'agent generateur
+    request_call_initial: Annotated[request, 'Contient les requêtes avant l\'agent generateur']
     #DataFrame obtenu et traité à partir de la baes de donnée et dont le contenu
     #est envoyé à l'utilisateur
     dataFrames : list
 
     # Flag indicating that the order is placed and completed.
     finished: bool
-
+    # Traitement formaté pour l'affichage
     traitement_format: Traitement_Format
+    # Matplotlib figure to be displayed in the UI
     figure: Figure
