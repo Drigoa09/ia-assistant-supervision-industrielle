@@ -8,16 +8,23 @@ import os
 from State import State
 
 from Agents.formaliseur_requete import Formalisateur_requete
+from Agents.prompt import PROMPT
+
 from Human.human import Human
+from Human.welcome_msg import WELCOME_MSG
+
 from InteractionBdd.interactionBdd import InteractionBdd
+
+from Requetes.areas import Area
+from Requetes.objects import Objet
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY") #Enlever ensuite
 os.environ["LANGCHAIN_PROJECT"] = "My_project"
 
-formalisateur_requete = Formalisateur_requete(None, None)
-human = Human("Antoine Drigo")
+formalisateur_requete = Formalisateur_requete(prompt_debut=PROMPT, objets=Objet, areas=Area)
+human = Human("Antoine Drigo", WELCOME_MSG)
 interactionBdd = InteractionBdd()
 
 # Start building a new graph.
@@ -57,10 +64,3 @@ if __name__ == "__main__":
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
 #  - 'q' to exit.
-
-'''
-from langchain_core.runnables.graph import MermaidDrawMethod
-from IPython.display import Image, display
-
-Image(chat_with_human_graph.get_graph().draw_mermaid_png())
-'''
