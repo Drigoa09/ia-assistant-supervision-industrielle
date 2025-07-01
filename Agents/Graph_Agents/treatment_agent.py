@@ -3,7 +3,7 @@ from model import model_codestral, model_mistral_medium
 
 from Tools_nodes.treatment_tools.traitement_format import Traitement_Format, fonction
 
-structured_llm = model_codestral.with_structured_output(fonction)
+structured_llm = model_codestral.with_structured_output(fonction, include_raw=True)
 
 EXEMPLES = f'''
 Exemple 1 :
@@ -77,12 +77,15 @@ def treatment_agent(state: OrderState) -> OrderState:
     # Appelle le modèle avec prompt fusionné
     traitement_format_result = structured_llm.invoke(prompt)
 
+    state['input_tokens'] += (traitement_format_result['raw'].usage_metadata['input_tokens'])
+    state['output_tokens'] += (traitement_format_result['raw'].usage_metadata['output_tokens'])
+
     #print("🧪 Résultat traitement_format:", traitement_format_result)
 
     # Tu crées un NOUVEAU dict propre ici
     updated_state = {
         **state,
-        "traitement_format": traitement_format_result
+        "traitement_format": traitement_format_result['parsed']
     }
 
     #print("📤 Ce que je retourne dans treatment_agent:", list(updated_state.keys()))

@@ -13,7 +13,7 @@ class Choix(BaseModel):
 
     choix_dataFrames : List[Element] = Field(description="Choix des dataFrames à afficher")
 
-model_with_structured_output = model_mistral_medium.with_structured_output(Choix)
+model_with_structured_output = model_mistral_medium.with_structured_output(Choix, include_raw=True)
 
 def generer_reponse(state: OrderState) -> OrderState:
     
@@ -44,9 +44,12 @@ def generer_reponse(state: OrderState) -> OrderState:
 
     request = model_with_structured_output.invoke([AGENT_JOB])
 
-    print(request)
+    state['input_tokens'] += (request['raw'].usage_metadata['input_tokens'])
+    state['output_tokens'] += (request['raw'].usage_metadata['output_tokens'])
 
-    state['request_call'] = request
+    print(request['parsed'])
+
+    state['request_call'] = request['parsed']
 
     return state
 

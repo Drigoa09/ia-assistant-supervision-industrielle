@@ -3,7 +3,9 @@ from model import model_codestral
 
 from Tools_nodes.database_tools.request_format import request
 
-structured_llm = model_codestral.with_structured_output(request)
+from devtools import pprint
+
+structured_llm = model_codestral.with_structured_output(request, include_raw = True)
 
 def extract_docs_agent(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
@@ -12,9 +14,12 @@ def extract_docs_agent(state: OrderState) -> OrderState:
     # Appel du modèle structuré
     req = structured_llm.invoke(state['information_chercher'])
 
+    state['input_tokens'] += (req['raw'].usage_metadata['input_tokens'])
+    state['output_tokens'] += (req['raw'].usage_metadata['output_tokens'])
+
     # ✅ Stocker proprement
-    state['request_call'] = req
-    state['request_call_initial'] = req
-    print("➡️ Requête extraite :", req)
+    state['request_call'] = req['parsed']
+    state['request_call_initial'] = req['parsed']
+    print("➡️ Requête extraite :", req['parsed'])
     print("📦 State keys: EXTRACT_DOC", list(state.keys()))
     return state

@@ -38,3 +38,6 @@ class OrderState(TypedDict):
     traitement_format: Traitement_Format
     # Matplotlib figure to be displayed in the UI
     figure: Figure
+
+    input_tokens : int
+    output_tokens : int

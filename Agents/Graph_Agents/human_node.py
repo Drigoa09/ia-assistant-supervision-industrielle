@@ -13,6 +13,13 @@ def human_node(state: OrderState) -> OrderState:
         state["messages"].append(AIMessage(content=WELCOME_MSG))
         state["finished"] = True  # Stopper pour éviter de re-boucler
         return state
+    
+    #Calcul des tokens
+
+    print(f"Input token : {state['input_tokens']}\nOutput_token : {state['output_tokens']}")
+
+    state['input_tokens'] = 0
+    state['output_tokens'] = 0
 
     last_msg = state["messages"][-1]
 
