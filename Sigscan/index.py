@@ -59,7 +59,7 @@ config = {"recursion_limit": 100}
 #state = chat_with_human_graph.invoke({"messages": []}, config)
 if __name__ == "__main__":
     # Pour tester le graphe manuellement (utile en dev)
-    state = {"messages": []}
+    state = {"messages": [], "finished" : False, "question" : ""}
     result = chat_with_human_graph.invoke(state, config={"recursion_limit": 100})
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.

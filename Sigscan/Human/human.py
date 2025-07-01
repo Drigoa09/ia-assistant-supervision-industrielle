@@ -21,6 +21,7 @@ class Human:
 
         if content in {"q", "quit", "exit", "goodbye"}:
             state["finished"] = True
+        state["question"] = content
 
         return state | {"messages" : [HumanMessage(content)]}
 

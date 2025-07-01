@@ -3,14 +3,14 @@ from typing import Optional
 
 class Temps(BaseModel):
 
-    annee : int
-    mois : int
-    jour : int
+    annee : int = Field(default=None, description = "Année")
+    mois : int = Field(default=None, description = "Mois")
+    jour : int = Field(default=None, description = "Jour")
 
 fields = {
     "object" : (any, ...),
     "area" : (any, ...),
-    "startDate" : (Optional[Temps], Field(default = None, description = "Date de début des positions en format epoch et en milisecondes")),
-    "endDate" : (Optional[Temps], Field(default = None, description = "Date de fin des positions en format epoch et en milisecondes"))
+    "startDate" : (Optional[Temps], Field(default = None, description = "Date de début des positions")),
+    "endDate" : (Optional[Temps], Field(default = None, description = "Date de fin des positions"))
 }
 

@@ -10,3 +10,5 @@ class State(TypedDict):
     call_request : dict = {}
 
     finished : bool = False
+
+    dataFrames: list
