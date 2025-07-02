@@ -136,10 +136,10 @@ class ChatController:
         lines.append(f"🧠 Question : {req_init.question_utilisateur}")
         lines.append(f"🎯 Intention : {req_init.intention}")
         lines.append(f"📂 Type de traitement : {req_init.type_traitement}\n")
-
-        lines.append("✅ DataFrames choisis pour affichage :")
-        for i, elem in enumerate(req.choix_dataFrames):
-            lines.append(f"    📄 DataFrame {i + 1} : Index {elem.numero_dataFrame}")
+        if hasattr(req, "choix_dataFrames"):
+            lines.append("✅ DataFrames choisis pour affichage :")
+            for i, elem in enumerate(req.choix_dataFrames):
+                lines.append(f"    📄 DataFrame {i + 1} : Index {elem.numero_dataFrame}")
 
         if req_init.elements_cherches_request:
             el = req_init.elements_cherches_request[0]
