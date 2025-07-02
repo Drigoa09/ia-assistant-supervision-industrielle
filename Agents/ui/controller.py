@@ -59,6 +59,13 @@ class ChatController:
 
         except Exception as e:
             self.view.display_error(f"Erreur lors de la sauvegarde : {str(e)}")
+    def display_welcome_message(self):
+        welcome = (
+            "👋 Bonjour ! Je suis votre assistant pour la supervision industrielle.\n"
+            "Posez-moi une question sur les machines, les outils, les alarmes ou la production !"
+        )
+        self.view.display_response(welcome)
+        self.history.append(AIMessage(content=welcome))  # 🔄 Historique
 
     def load_history_from_file(self, filepath):
         confirm = QMessageBox.StandardButton.Yes

@@ -398,6 +398,14 @@ class ChatWindow(QWidget):
 
     def set_controller(self, controller):
         self.controller = controller  # accès au contrôleur depuis la vue
+    # UI/view.py (dans ChatWindow)
+    def showEvent(self, event):
+        super().showEvent(event)
+
+        # Appelle une fonction d’accueil une seule fois
+        if not hasattr(self, "_welcome_done"):
+            self.controller.display_welcome_message()
+            self._welcome_done = True
 
     def append_matplotlib_plot(self, fig):
         canvas = FigureCanvas(fig)
@@ -423,16 +431,19 @@ class ChatWindow(QWidget):
         except Exception as e:
             print("Erreur dans le résumé:", e)
 
-        last = self.controller.history[-1]
-        if isinstance(last, AIMessage):
-            self.display_response(last.content)
-
         # 🎯 Affiche le graphique si présent
         fig = self.controller.state.get("figure")
         if fig:
+            self.display_response("📈 Voici le graphique généré à partir des données sélectionnées.")
             self.append_matplotlib_plot(fig)
+        else:
+            # S’il n’y a pas de figure, affiche le message AI normal
+            last = self.controller.history[-1]
+            if isinstance(last, AIMessage):
+                self.display_response(last.content)
 
         self.hide_loading()
+
 
     @Slot(str)
     def display_error(self, error_msg):
