@@ -398,7 +398,7 @@ class ChatWindow(QWidget):
 
     def set_controller(self, controller):
         self.controller = controller  # accès au contrôleur depuis la vue
-    # UI/view.py (dans ChatWindow)
+
     def showEvent(self, event):
         super().showEvent(event)
 
