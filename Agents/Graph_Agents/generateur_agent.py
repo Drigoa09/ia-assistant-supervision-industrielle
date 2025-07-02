@@ -41,6 +41,8 @@ def generer_reponse(state: OrderState) -> OrderState:
     Fait en sorte de donner le plus d'informations possible en donnant le moins de DataFrame possibles.
     L'humain est con et n'aime pas lire trop de choses. Va à l'essentiel, putain !
     '''
+    AGENT_JOB += f"\nLes indices valides sont : {list(range(n))}\n"
+    AGENT_JOB += "Tu dois répondre uniquement avec des indices dans cette liste.\n"
 
     request = model_with_structured_output.invoke([AGENT_JOB])
 

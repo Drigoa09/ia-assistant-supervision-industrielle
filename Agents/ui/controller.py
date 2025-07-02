@@ -10,6 +10,8 @@ import os
 #from logic.core import process_user_input
 
 class ChatController:
+    style = "padding-left: 20px; margin: 0; white-space: pre-wrap; font-family: Consolas, monospace; line-height: 1.4em;"
+
     def __init__(self):
         self.view = None
         self.history = []
@@ -109,73 +111,67 @@ class ChatController:
         if path:
             self.load_history_from_file(path)
     def _format_summary(self, state):
-        print("📦 State keys: FORMAT_SUMMARY", list(state.keys()))
         req_init = state.get("request_call_initial", None)
         req = state.get("request_call", None)
         fonctions = state.get("traitement_format", None)
         traitements = state.get("traitements", None)
+        input_tokens = state.get("latest_input_tokens", None)
+        output_tokens = state.get("latest_output_tokens", None)
 
-        print("🔍 Résumé des traitements :", state.get("traitements",None))
-
-        """ if not req:
-            req = state.get("request_call") """
-        print("🔍 Résumé de la requête (call) :", req)
-        print("🔍 Résumé de la requête (initial) :", req_init)
         if not req:
             return "🤷 Je n’ai pas pu extraire la requête utilisateur."
 
-        lines = ["📋 <b>Résumé de la requête</b>"]
+        lines = []
+        lines.append("📋 Résumé de la requête\n")
+        lines.append("Nombre de tokens utilisés:\n")
+        lines.append(f"    ➡️ Tokens d'entrée : {input_tokens}")
+        lines.append(f"    ➡️ Tokens de sortie : {output_tokens}\n")
+        lines.append(f"🧠 Question : {req_init.question_utilisateur}")
+        lines.append(f"🎯 Intention : {req_init.intention}")
+        lines.append(f"📂 Type de traitement : {req_init.type_traitement}\n")
 
-        
-        lines.append(f"🧠 <b>Question</b> : {req_init.question_utilisateur}")
-        lines.append(f"🎯 <b>Intention</b> : {req_init.intention}")
-        lines.append(f"📂 <b>Type de traitement</b> : {req_init.type_traitement}")
-
-        # 👉 Sinon, c’est un choix simple comme Choix(choix_dataFrames=[...])
-        lines.append("✅ <b>DataFrames choisis pour affichage :</b>")
+        lines.append("✅ DataFrames choisis pour affichage :")
         for i, elem in enumerate(req.choix_dataFrames):
-            lines.append(f"<div style='margin-left:20px'>📄 <b>   DataFrame {i+1}</b> : Index {elem.numero_dataFrame}</div>")
+            lines.append(f"    📄 DataFrame {i + 1} : Index {elem.numero_dataFrame}")
+
         if req_init.elements_cherches_request:
-                el = req_init.elements_cherches_request[0]
+            el = req_init.elements_cherches_request[0]
 
-                if el.periode_requete:
-                    date_from = el.periode_requete.date_from.split("T")[0]
-                    date_to = el.periode_requete.date_to.split("T")[0]
-                    lines.append(f"🗓️ <b>Période</b> : {date_from} → {date_to}")
-
-                if el.machine_request:
-                    lines.append(f"🏭 <b>Machine</b> : {el.machine_request.name}")
-
-                if el.variables_requete:
-                    lines.append("🔧 <b>Variables de la requête</b> :")
-                    for v in el.variables_requete:
-                        lines.append(f"<div style='margin-left:20px'>➡️ <b>{v.role}</b> : {v.alias}</div>")
+            if el.periode_requete:
+                date_from = el.periode_requete.date_from.split("T")[0]
+                date_to = el.periode_requete.date_to.split("T")[0]
+                lines.append(f"\n🗓️ Période : {date_from} → {date_to}")
+            if el.machine_request:
+                lines.append(f"🏭 Machine : {el.machine_request.name}")
+            if el.variables_requete:
+                lines.append("🔧 Variables de la requête :")
+                for v in el.variables_requete:
+                    lines.append(f"    ➡️ {v.role} : {v.alias}")
 
         if req_init.resultat_attendu:
             try:
-                lines.append(f"📌 <b>Résultat attendu</b> : {', '.join(req_init.resultat_attendu)}")
+                lines.append(f"\n📌 Résultat attendu : {', '.join(req_init.resultat_attendu)}")
             except TypeError:
-                lines.append(f"📌 <b>Résultat attendu</b> : {req_init.resultat_attendu}")
-        # Traitements effectués
-        lines.append("🔧 <b>Traitements effectués</b> :")
+                lines.append(f"📌 Résultat attendu : {req_init.resultat_attendu}")
+
+        lines.append("\n🔧 Traitements effectués :")
         if traitements:
             for i, t in enumerate(traitements):
-                lines.append(f"<div style='margin-left:20px'>➡️ Traitement {i + 1} : {t}</div>")
+                lines.append(f"    ➡️ Traitement {i + 1} : {t}")
         else:
-            lines.append("<div style='margin-left:20px'>➡️ Aucun traitement déclaré</div>")
+            lines.append("    ➡️ Aucun traitement déclaré")
 
-        # Fonctions appelées
-        # Fonctions appelées
-        lines.append("<div style='margin-left:0px'>🛠️ <b>Fonctions appliquées :</b></div>")
-
+        lines.append("\n🛠️ Fonctions appliquées :")
         if fonctions and hasattr(fonctions, "fonction_appelee"):
             args_str = ', '.join(str(arg) for arg in fonctions.args)
-            lines.append(f"<div style='margin-left:20px'>⚙️ <b>Fonction</b> : {fonctions.fonction_appelee.value} avec args {args_str}</div>")
+            lines.append(f"    ⚙️ Fonction : {fonctions.fonction_appelee.value} avec args {args_str}")
         else:
-            lines.append("<div style='margin-left:20px'>⚙️ Aucune fonction détectée ou applicable</div>")
+            lines.append("    ⚙️ Aucune fonction détectée ou applicable")
 
+        # 💡 Converti le tout dans un bloc HTML <pre> avec style propre
+        content = "\n".join(lines)
+        return f"<pre style='font-family: Consolas, monospace; font-size: 13px; line-height: 1.4em; white-space: pre-wrap; margin: 0;'>{content}</pre>"
 
-        return "<br>".join(lines)
 
     def on_send_clicked(self):
         user_text = self.view.input_field.text().strip()
@@ -226,6 +222,6 @@ class ChatController:
             self.view,
             b"display_error",
             Qt.QueuedConnection,
-            Q_ARG(str, error_msg)
+            Q_ARG(str, str(error_msg))
         )
 

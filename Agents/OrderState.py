@@ -41,3 +41,5 @@ class OrderState(TypedDict):
 
     input_tokens : int
     output_tokens : int
+    latest_input_tokens: int
+    latest_output_tokens: int

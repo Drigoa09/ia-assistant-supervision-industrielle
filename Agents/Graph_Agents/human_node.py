@@ -17,7 +17,8 @@ def human_node(state: OrderState) -> OrderState:
     #Calcul des tokens
 
     print(f"Input token : {state['input_tokens']}\nOutput_token : {state['output_tokens']}")
-
+    state['latest_input_tokens'] = state['input_tokens']
+    state['latest_output_tokens'] = state['output_tokens']
     state['input_tokens'] = 0
     state['output_tokens'] = 0
 
