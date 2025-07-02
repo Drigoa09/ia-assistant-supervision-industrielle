@@ -146,8 +146,8 @@ class InteractionBdd:
             if df.empty:
                 return "📭 Aucune donnée trouvée."
 
-            df = df[["sigscan_object_id", "sigscan_object_name", "area_name", "last_update_date"]].copy()
-            df.columns = ["Objet ID", "Nom objet", "Zone", "Date de passage"]
+            df = df[["sigscan_object_id", "sigscan_object_name", "area_name", "last_update_date","positionx","positiony"]].copy()
+            df.columns = ["Objet ID", "Nom objet", "Zone", "Date de passage","Position_X","Position_Y"]
             df.drop_duplicates(inplace=True)
             return "📋 Résultat :\n" + df.to_string(index=False)
 
