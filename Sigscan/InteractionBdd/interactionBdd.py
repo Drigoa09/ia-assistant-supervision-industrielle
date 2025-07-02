@@ -147,9 +147,9 @@ class InteractionBdd:
                 return "📭 Aucune donnée trouvée."
 
             df = df[["sigscan_object_id", "sigscan_object_name", "area_name", "last_update_date","positionx","positiony"]].copy()
-            df.columns = ["Objet ID", "Nom objet", "Zone", "Date de passage","Position_X","Position_Y"]
+            df.columns = ["Objet ID", "Nom objet", "Zone", "Date de passage","positionX","positionY"]
             df.drop_duplicates(inplace=True)
-            return "📋 Résultat :\n" + df.to_string(index=False)
+            return "📋 Résultat :\n" + df.to_html() #df.to_string(index=False)
 
         df_summary = pretty_dataframe_summary(df_positions)
         return state | {"messages": AIMessage(content=df_summary)}

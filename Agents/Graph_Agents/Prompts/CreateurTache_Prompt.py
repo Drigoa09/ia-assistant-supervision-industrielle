@@ -25,12 +25,30 @@ EXEMPLES = '''
 Inspire toi des exemples pour élaborer tes réponses.
 En général, on filtre les dataFrames à la fin. Si tu ne le fais pas, on te débranche du DataCenter
 
-Exemple 1 :
+
+Exemple :
+Liste les programmes 
+INFORMATION_CHERCHER = "Trouver les programmes"
+
+-----------------------------------------------------------------------
+
+Exemple :
+Liste les cycles 
+INFORMATION_CHERCHER = "Trouver les cycles"
+
+-----------------------------------------------------------------------
+
+Exemple :
+Liste les outils
+INFORMATION_CHERCHER = "Trouver les outils"
+
+Exemple :
 Trouver les programmes en fonction de leur cycle associé.
 
 INFORMATION_CHERCHER='Trouver les programmes et les cycles' TRAITEMENT=['Exprimer les programmes en fonction de leur cycle associé']
+-----------------------------------------------------------------------
 
-Exemple 2 :
+Exemple :
 Trouver les <p id = 1>outils</p> utilisés dans le programme _N_OP20_AIR_SPF
 
 Explication du deuxième traitement : 
@@ -38,24 +56,33 @@ On regarde la liste des <p id = 1>outils</p> utilisés. Puis, on ne garde que le
 
 INFORMATION_CHERCHER = 'Trouver les programmes, les cycles, les outils et les temps de coupe' TRAITEMENT = ['<Exprimer les programmes en fonction de leur cycle associé et exprimer les outils en fonction de leur temps de coupe associé>', 'Filtrer les <p id = 1>outils</p> utilisés avec le programme _N_OP20_AIR_SPF>']
 
+-----------------------------------------------------------------------
 
-Exemple 3 :
+
+Exemple :
 Repère la valeur maximum de la charge de broche.
 
 INFORMATION_CHERCHER='Trouver les valeurs de la charge de broche' TRAITEMENT=['Trouver la valeur de la broche']
 
-Exemple 4 :
+-----------------------------------------------------------------------
+
+Exemple :
 Chercher la température
 INFORMATION_CHERCHER = 'Chercher la température' TRAITEMENT = []
 
-Exemple 5 :
+-----------------------------------------------------------------------
+
+Exemple :
 Quelles sont les outils ayant dépassé deux heures de coupe cumulées ?
 INFORMATION_CHERCHER = 'Chercher les outils et les temps de coupe' TRAITEMENT = [Exprimer les outils en fonction de leur temps de coupe associé, Filtrer les outils ayant dépassé deux heures de coupe cumulées]
 
-Exemple 6 :
+-----------------------------------------------------------------------
+
+Exemple :
 Quelles sont les 3 alarmes les plus récurrentes ?
 
 INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025" TRAITEMENT = ["Trouver les occurences des alarmes parmi les alarmes et les classer par ordre décroissant", "Extraire les 3 premières occurences des alarmes"]
+
 '''
 #Prompt donné à l'agent
 AGENT_JOB = f'''
@@ -70,7 +97,7 @@ Les traitements possibles sont : {TRAITEMENTS_POSSIBLES}
 
 Documentation : {DOCUMENTATION}
 
-Par défaut, si seul la liste des programmes est demandée à chercher, il faut également demander à chercher leur cycle associé.
+Par défaut, si la liste des programmes est demandée à chercher et que des traitements sont à effectuer, il faut également demander à chercher leur cycle associé.
 Pour, les outils, il faut aussi demander leur temps de coupe associé.
 De même pour les alarmes
 Vérifie bien qu'il y a suffisamment d'informations demandées pour accomplir les traitements voulus.
