@@ -1,4 +1,4 @@
-from Tools_nodes.database_tools.request_format import request, Attribut_Principal
+from Agents.Tools_nodes.database_node.request_format import request, Attribut_Principal
 import requests
 import urllib3
 import warnings
@@ -100,4 +100,4 @@ def traitement(request : request):
     
     dataframes = build_dataframes(all_hits, fields, fields_alias)
 
-    return (dataframes, fields_alias, fields_role)
+    return (dataframes, fields_role)

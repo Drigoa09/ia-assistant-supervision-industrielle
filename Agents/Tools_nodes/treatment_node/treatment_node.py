@@ -1,0 +1,58 @@
+from langchain_core.messages.ai import AIMessage
+
+from Agents.Tools_nodes.treatment_node.traitement_format import fonctions_existantes
+
+import OrderState
+
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from Agents.Tools_nodes.database_node.database_node import DataFrameRole
+
+from Agents.Tools_nodes.treatment_node.fonction_appelees import D
+
+"""
+Les outils utilisés sont inclus dans des temps de coupe.
+Les temps de coupe sont inclus dans des programmes
+Les programmes sont inclus dans des temps de cycles.
+"""
+
+
+def treatment_node(state: OrderState) -> OrderState:
+    """The chatbot itself. A wrapper around the model's own chat interface."""
+    print("📦 State reçu dans treatment_node:", list(state.keys()))
+    print("🔍 traitement_format vaut:", state.get("traitement_format"))
+
+    if state['traitement'] != None:
+
+        # 🔁 Tentative de récupération sécurisée
+        traitement_format = state.get("traitement_format")
+        if traitement_format is None:
+            raise ValueError("❌ traitement_format est totalement absent, même en fallback ! Clés disponibles : " + str(state.keys()))
+
+        args_restants = []
+        new_dataFrames = []
+
+        fonction_appelee = traitement_format
+            
+        new_dataFrames += D[fonction_appelee.fonction_appelee](state['dataFrames'], fonction_appelee.args)
+
+        if fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
+            state['figure'] = new_dataFrames
+
+        state['dataFrames'] = new_dataFrames
+
+        message = ""
+
+        for (dataFrame_index) in new_dataFrames:
+            message += dataFrame_index.dataFrame.to_html()
+
+        #new_output = {"messages" : [AIMessage(content=message)]}
+        print("📦 State après traitement:", list(state.keys()))
+        return {
+                **state,
+                "messages": state["messages"] + [AIMessage(content=message)]
+            }
+    
+    else:
+        
+        return state

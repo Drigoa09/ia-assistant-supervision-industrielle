@@ -1,4 +1,4 @@
-from Tools_nodes.database_tools.request_traitement import traitement
+from Agents.Tools_nodes.database_node.request_traitement import traitement
 from langchain_core.messages.ai import AIMessage
 import OrderState
 
@@ -18,7 +18,7 @@ def database_agent(state: OrderState) -> OrderState:
     state['dataFrames'] = []
     
     for element_cherche in state['request_call'].elements_cherches_request:
-        (dataframes, fields_alias_contexte, fields_role) = traitement(element_cherche)
+        (dataframes, fields_role) = traitement(element_cherche)
 
         i = 0
         for (dataFrame_index) in dataframes:
