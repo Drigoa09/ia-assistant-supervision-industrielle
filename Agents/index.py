@@ -3,14 +3,14 @@ import os
 from langgraph.graph import StateGraph, START, MessagesState
 
 from Graph_Agents.human_node import human_node, maybe_exit_human_node
-from Graph_Agents.CreateurTache import createur_tache
-from Graph_Agents.Extract_docs_agent import extract_docs_agent
+from Graph_Agents.CreateurTache.CreateurTache import CreateurTache
+from Agents.Graph_Agents.ExtractDocsAgent.Extract_docs_agent import Extract_docs_agent
 from Tools_nodes.database_node import database_agent
 from Tools_nodes.continuer_node import tos
-from Graph_Agents.treatment_agent import treatment_agent
+from Graph_Agents.TreatmentAgent.treatmentAgent import TreatmentAgent
 from Tools_nodes.treatment_node import treatment_node
 
-from Graph_Agents.generateur_agent import generer_reponse
+from Agents.Graph_Agents.GenerateurAgent.generateur_agent import Generateur_agent
 from Tools_nodes.generateur_node import generateur_node
 
 from OrderState import OrderState
@@ -28,14 +28,14 @@ graph_builder = StateGraph(OrderState)
 # Add the chatbot and human nodes to the app graph.
 #graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
 graph_builder.add_node("Humain", human_node)
-graph_builder.add_node("Créateur de tâches", createur_tache)
-graph_builder.add_node("Formulateur de demandes d'informations", extract_docs_agent)
+graph_builder.add_node("Créateur de tâches", CreateurTache.interaction)
+graph_builder.add_node("Formulateur de demandes d'informations", Extract_docs_agent.interaction)
 graph_builder.add_node("Executeur de demandes d'informations", database_agent)
-graph_builder.add_node("Formulateur de requêtes de traitement", treatment_agent)
+graph_builder.add_node("Formulateur de requêtes de traitement", TreatmentAgent.interaction)
 graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node.continuer_node)
 graph_builder.add_node("Executeur de requêtes de traitement", treatment_node)
 
-graph_builder.add_node("Générateur de réponse", generer_reponse)
+graph_builder.add_node("Générateur de réponse", Generateur_agent.interaction)
 graph_builder.add_node("Application du générateur", generateur_node)
 
 # The chatbot will always go to the human next.
