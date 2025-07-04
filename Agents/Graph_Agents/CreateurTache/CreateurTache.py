@@ -19,9 +19,6 @@ class CreateurTache(Agent):
 
         #Appel à structured_llm
         new_output = self.structured_llm.invoke([AGENT_JOB, state['question']])
-        
-        state['input_tokens'] += (new_output['raw'].usage_metadata['input_tokens'])
-        state['output_tokens'] += (new_output['raw'].usage_metadata['output_tokens'])
 
         state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(new_output['raw'])
 
@@ -33,20 +30,19 @@ class CreateurTache(Agent):
         if hasattr(new_output['parsed'], 'TRAITEMENT') and new_output['parsed'].TRAITEMENT != None:
             state['traitements'] = new_output['parsed'].TRAITEMENT
 
-            n = len(new_output['parsed'].TRAITEMENT)
-            msg_traitement = ""
-            for i in range(n):
-                msg_traitement += f"Traitement effectué {i + 1} : " + new_output['parsed'].TRAITEMENT[i] + "\n"
-
-            print(msg_traitement + "\n")
+            self.afficher_traitement(new_output['parsed'])
         
         else:
             state['traitements'] = []
 
         return state
     
-    def obtenir_tokens(self, message):
-        
-        return (message.usage_metadata['input_tokens'], message.usage_metadata['output_tokens'])
+    def afficher_traitement(self, message):
+        n = len(message.TRAITEMENT)
+        msg_traitement = ""
+        for i in range(n):
+            msg_traitement += f"Traitement effectué {i + 1} : " + message.TRAITEMENT[i] + "\n"
+
+        print(msg_traitement + "\n")
     
     
