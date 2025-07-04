@@ -2,7 +2,7 @@ from typing import Annotated, List, TypedDict
 from langgraph.graph.message import add_messages
 from Tools_nodes.treatment_node.traitement_format import Traitement_Format
 
-from Tools_nodes.database_node.request_format import request 
+from Graph_Agents.ExtractDocsAgent.request_format import request 
 from matplotlib.figure import Figure
 class OrderState(TypedDict):
     """State representing the customer's order conversation."""
@@ -43,3 +43,6 @@ class OrderState(TypedDict):
     output_tokens : int
     latest_input_tokens: int
     latest_output_tokens: int
+
+    prix_input_tokens : float
+    prix_output_tokens : float

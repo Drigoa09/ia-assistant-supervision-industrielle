@@ -24,6 +24,9 @@ class TreatmentAgent(Agent):
         traitement_format_result = self.structured_llm.invoke(prompt)
 
         state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(traitement_format_result['raw'])
+        
+        state['prix_input_tokens'] += state['input_tokens'] * 0.3 / 10 ** 6
+        state['prix_output_tokens'] += state['output_tokens'] * 0.9 / 10 ** 6
 
         #print("🧪 Résultat traitement_format:", traitement_format_result)
 

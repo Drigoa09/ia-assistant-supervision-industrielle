@@ -1,8 +1,9 @@
 from OrderState import OrderState
 from model import model_codestral
 
-from Tools_nodes.database_node.request_format import request
-from Agent import Agent
+from Graph_Agents.ExtractDocsAgent.request_format import request
+from Graph_Agents.Agent import Agent
+
 class Extract_docs_agent(Agent):
     def __init__(self):
         self.structured_llm = model_codestral.with_structured_output(request, include_raw = True)
@@ -15,6 +16,9 @@ class Extract_docs_agent(Agent):
         req = self.structured_llm.invoke(state['information_chercher'])
 
         state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(req['raw'])
+        
+        state['prix_input_tokens'] += state['input_tokens'] * 0.3 / 10 ** 6
+        state['prix_output_tokens'] += state['output_tokens'] * 0.9 / 10 ** 6
 
         # ✅ Stocker proprement
         state['request_call'] = req['parsed']

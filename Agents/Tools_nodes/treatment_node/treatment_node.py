@@ -10,13 +10,6 @@ from Tools_nodes.database_node.database_node import DataFrameRole
 
 from Tools_nodes.treatment_node.fonction_appelees import D
 
-"""
-Les outils utilisés sont inclus dans des temps de coupe.
-Les temps de coupe sont inclus dans des programmes
-Les programmes sont inclus dans des temps de cycles.
-"""
-
-
 def treatment_node(state: OrderState) -> OrderState:
     """The chatbot itself. A wrapper around the model's own chat interface."""
     print("📦 State reçu dans treatment_node:", list(state.keys()))

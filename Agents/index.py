@@ -5,12 +5,13 @@ from langgraph.graph import StateGraph, START, MessagesState
 from Graph_Agents.human_node import human_node, maybe_exit_human_node
 from Graph_Agents.CreateurTache.CreateurTache import CreateurTache
 from Graph_Agents.CreateurTache.Separation import Separation
-from Graph_Agents.Extract_docs_agent import extract_docs_agent
 from Tools_nodes.database_node.database_node import database_agent
 from Tools_nodes.continuer_node.continuer_node import Continuer_node
 from Graph_Agents.TreatmentAgent.treatmentAgent import TreatmentAgent
 from Graph_Agents.TreatmentAgent.prompt_treatmentAgent import AGENT_GENERATION_SYSINT, EXEMPLES
 from Tools_nodes.treatment_node.treatment_node import treatment_node
+
+from Graph_Agents.ExtractDocsAgent.Extract_docs_agent import Extract_docs_agent
 
 from Graph_Agents.GenerateurAgent.generateur_agent import Generateur_agent, Choix
 from Tools_nodes.generateur_node.generateur_node import generateur_node
@@ -23,6 +24,7 @@ createurTache = CreateurTache(Separation)
 continuer_node = Continuer_node()
 generer_reponse = Generateur_agent(Choix)
 treatmentAgent = TreatmentAgent(fonction, AGENT_GENERATION_SYSINT, EXEMPLES)
+extract_doc_agent = Extract_docs_agent()
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
@@ -36,7 +38,7 @@ graph_builder = StateGraph(OrderState)
 #graph_builder.add_node("chatbot", chatbot_with_welcome_msg)
 graph_builder.add_node("Humain", human_node)
 graph_builder.add_node("Créateur de tâches", createurTache.interaction)
-graph_builder.add_node("Formulateur de demandes d'informations", extract_docs_agent)
+graph_builder.add_node("Formulateur de demandes d'informations", extract_doc_agent.interaction)
 graph_builder.add_node("Executeur de demandes d'informations", database_agent)
 graph_builder.add_node("Formulateur de requêtes de traitement", treatmentAgent.interaction)
 graph_builder.add_node("Indicateur de l'existance de traitements supplémentaires", continuer_node.continuer_node)
@@ -80,10 +82,3 @@ if __name__ == "__main__":
 # Things to try:
 #  - Just chat! There's no ordering or menu yet.
 #  - 'q' to exit.
-
-'''
-from langchain_core.runnables.graph import MermaidDrawMethod
-from IPython.display import Image, display
-
-Image(chat_with_human_graph.get_graph().draw_mermaid_png())
-'''

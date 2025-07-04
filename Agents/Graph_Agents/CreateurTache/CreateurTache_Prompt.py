@@ -19,6 +19,7 @@ DOCUMENTATION = '''
 Comment calculer un rendement de coupe ?
 Il faut tout d'abord extraire les temps de cycle et les temps où les machines sont allumées.
 Ensuite, il faut calculer la somme des temps de cycle divisée par la somme des temps où les machines sont allumées.
+
 '''
 #Exemples d'entrées et sorties de l'agent
 EXEMPLES = '''
@@ -102,11 +103,15 @@ Pour, les outils, il faut aussi demander leur temps de coupe associé.
 De même pour les alarmes
 Vérifie bien qu'il y a suffisamment d'informations demandées pour accomplir les traitements voulus.
 
+Information sur la base de donnée : 
+Les outils utilisés sont inclus dans des temps de coupe.
+Les temps de coupe sont inclus dans des programmes
+Les programmes sont inclus dans des temps de cycles.
+
 Chaque programme est associé à un cycle.
 Chaque outil est associé à un temps de coupe.
 
-Pour associer une variable à une autre variable, on utilise l'outil : 
-- Exprimer une information en fonction d'une autre information
+Si aucune date n'est précisé, prendre entre aujourd'hui et 90 jours avant
 
 {EXEMPLES}
 '''

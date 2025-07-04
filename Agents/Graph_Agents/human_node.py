@@ -4,7 +4,12 @@ from typing import Literal
 from langgraph.graph import END
 from langchain_core.messages import HumanMessage, AIMessage
 
+from datetime import datetime
+
 WELCOME_MSG = "Bonjour ! Je suis votre assistant, comment puis-je vous aider?"
+
+def obtenir_date_ajd():
+    return f"\nNous sommes le {datetime.now()}"
 
 def human_node(state: OrderState) -> OrderState:
     
@@ -17,20 +22,26 @@ def human_node(state: OrderState) -> OrderState:
     #Calcul des tokens
 
     print(f"Input token : {state['input_tokens']}\nOutput_token : {state['output_tokens']}")
+    print(f"Prix Input token : {state['prix_input_tokens']}\nPrix Output_token : {state['prix_output_tokens']}")
     state['latest_input_tokens'] = state['input_tokens']
     state['latest_output_tokens'] = state['output_tokens']
     state['input_tokens'] = 0
     state['output_tokens'] = 0
 
-    last_msg = state["messages"][-1]
+    state['prix_input_tokens'] = 0
+    state['prix_output_tokens'] = 0
+
+    last_msg = state["messages"][-1] 
 
     if isinstance(last_msg, AIMessage):
         state["finished"] = True
     elif isinstance(last_msg, HumanMessage):
-        print("[Utilisateur]:", last_msg.content)
-        state["question"] = last_msg.content
+        print("[Utilisateur]:", last_msg.content + obtenir_date_ajd())
+        state["question"] = last_msg.content + obtenir_date_ajd()
 
     return state
+
+
 
     '''
     """Display the last model message to the user, and receive the user's input."""

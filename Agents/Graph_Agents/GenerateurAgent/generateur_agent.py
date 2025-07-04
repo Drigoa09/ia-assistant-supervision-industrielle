@@ -49,6 +49,9 @@ class Generateur_agent(Agent):
         request = self.model_with_structured_output.invoke([AGENT_JOB])
 
         state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(request['raw'])
+        
+        state['prix_input_tokens'] += state['input_tokens'] * 0.4 / 10 ** 6
+        state['prix_output_tokens'] += state['output_tokens'] * 2 / 10 ** 6
 
         print(request['parsed'])
 

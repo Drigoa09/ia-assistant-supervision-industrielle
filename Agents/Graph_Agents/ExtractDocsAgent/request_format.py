@@ -50,7 +50,7 @@ class variable(BaseModel):
 
 PERIODES = '''
 🕓 **Période :**
-- Si aucune période n’est mentionnée dans la question → considérer une période par défaut de 90 jours
+- Si aucune période n’est mentionnée dans la question → considérer une période par défaut de 90 jours avant aujourd'hui
 '''
 
 MACHINES = '''

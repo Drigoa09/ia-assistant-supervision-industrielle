@@ -6,6 +6,8 @@ from model import model_codestral, model_mistral_medium
 from Graph_Agents.CreateurTache.CreateurTache_Prompt import AGENT_JOB
 
 from Graph_Agents.Agent import Agent
+
+from datetime import datetime
         
 class CreateurTache(Agent):
         
@@ -21,6 +23,8 @@ class CreateurTache(Agent):
         new_output = self.structured_llm.invoke([AGENT_JOB, state['question']])
 
         state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(new_output['raw'])
+        state['prix_input_tokens'] += state['input_tokens'] * 0.4 / 10 ** 6
+        state['prix_output_tokens'] += state['output_tokens'] * 2 / 10 ** 6
 
         state['information_chercher'] = new_output['parsed'].INFORMATION_CHERCHER
 
@@ -44,5 +48,3 @@ class CreateurTache(Agent):
             msg_traitement += f"Traitement effectué {i + 1} : " + message.TRAITEMENT[i] + "\n"
 
         print(msg_traitement + "\n")
-    
-    

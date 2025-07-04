@@ -1,4 +1,4 @@
-from Tools_nodes.database_node.request_format import request, Attribut_Principal
+from Graph_Agents.ExtractDocsAgent.request_format import request, Attribut_Principal
 import requests
 import urllib3
 import warnings
