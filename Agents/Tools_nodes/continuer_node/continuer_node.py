@@ -1,7 +1,7 @@
 from typing import Literal
 from OrderState import OrderState
 
-class tos():
+class Continuer_node():
 
     def continuer_node(self, state: OrderState) -> OrderState:
         """The chatbot itself. A wrapper around the model's own chat interface."""

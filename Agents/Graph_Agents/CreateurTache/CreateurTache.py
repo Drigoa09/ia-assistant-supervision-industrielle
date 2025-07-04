@@ -5,7 +5,7 @@ from OrderState import OrderState
 from model import model_codestral, model_mistral_medium
 from Graph_Agents.CreateurTache.CreateurTache_Prompt import AGENT_JOB
 
-from Agent import Agent
+from Graph_Agents.Agent import Agent
         
 class CreateurTache(Agent):
         

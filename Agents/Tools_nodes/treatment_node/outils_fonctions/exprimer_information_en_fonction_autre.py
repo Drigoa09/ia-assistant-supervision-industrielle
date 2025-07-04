@@ -1,4 +1,4 @@
-from Agents.Tools_nodes.database_node.database_node import DataFrameRole
+from Tools_nodes.database_node.database_node import DataFrameRole
 
 # Extraire les intervalles de cycle
 def extraire_intervalles(df_source, df_contextes, variables_contextes, moment, seuil_pause=5):

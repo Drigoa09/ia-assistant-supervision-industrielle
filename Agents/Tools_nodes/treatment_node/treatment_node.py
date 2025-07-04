@@ -1,14 +1,14 @@
 from langchain_core.messages.ai import AIMessage
 
-from Agents.Tools_nodes.treatment_node.traitement_format import fonctions_existantes
+from Tools_nodes.treatment_node.traitement_format import fonctions_existantes
 
 import OrderState
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from Agents.Tools_nodes.database_node.database_node import DataFrameRole
+from Tools_nodes.database_node.database_node import DataFrameRole
 
-from Agents.Tools_nodes.treatment_node.fonction_appelees import D
+from Tools_nodes.treatment_node.fonction_appelees import D
 
 """
 Les outils utilisés sont inclus dans des temps de coupe.

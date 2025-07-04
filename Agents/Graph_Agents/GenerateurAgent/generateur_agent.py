@@ -4,7 +4,7 @@ from model import model_mistral_medium
 from pydantic import BaseModel, Field
 
 from typing import List
-from Agent import Agent
+from Graph_Agents.Agent import Agent
 class Element(BaseModel):
 
     numero_dataFrame : int = Field(description = "Numéro du dataFrame où est contenu l'élément")

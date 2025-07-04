@@ -1,8 +1,8 @@
-from Agents.Graph_Agents.Agent import Agent
+from Graph_Agents.Agent import Agent
 from OrderState import OrderState
 from model import model_codestral, model_mistral_medium
 
-from Tools_nodes.treatment_tools.traitement_format import Traitement_Format, fonction
+from Tools_nodes.treatment_node.traitement_format import Traitement_Format, fonction
 
 class TreatmentAgent(Agent):
 
@@ -16,7 +16,7 @@ class TreatmentAgent(Agent):
         """Agent de traitement"""
 
         if state['traitement'] != None:
-            prompt = self.creer_prompt(state['dataFrames'])
+            prompt = self.creer_prompt(state['dataFrames'], state['traitement'])
 
             print("Prompt donné : \n\n" + prompt)
 
@@ -40,7 +40,7 @@ class TreatmentAgent(Agent):
     def creer_prompt(self, dataFrames, traitement_actuel):
         job_message = self.prompt_job
         job_message += self.ajouter_cles_dataFrames(dataFrames)
-        job_message += self.EXEMPLES
+        job_message += self.exemples
         job_message += f"\n{traitement_actuel}"
 
         return job_message

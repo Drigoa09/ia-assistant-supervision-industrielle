@@ -1,4 +1,4 @@
-from Agents.Tools_nodes.database_node.database_node import DataFrameRole
+from Tools_nodes.database_node.database_node import DataFrameRole
 import pandas as pd
 
 def filtrer_valeur(dataFrames, args):

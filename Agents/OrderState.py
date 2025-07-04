@@ -1,8 +1,8 @@
 from typing import Annotated, List, TypedDict
 from langgraph.graph.message import add_messages
-from Tools_nodes.treatment_tools.traitement_format import Traitement_Format
+from Tools_nodes.treatment_node.traitement_format import Traitement_Format
 
-from Tools_nodes.database_tools.request_format import request 
+from Tools_nodes.database_node.request_format import request 
 from matplotlib.figure import Figure
 class OrderState(TypedDict):
     """State representing the customer's order conversation."""
