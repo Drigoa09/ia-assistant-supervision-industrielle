@@ -1,7 +1,7 @@
 from OrderState import OrderState
 from model import model_codestral
 
-from Tools_nodes.database_tools.request_format import request
+from Tools_nodes.database_node.request_format import request
 from Agent import Agent
 class Extract_docs_agent(Agent):
     def __init__(self):
