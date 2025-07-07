@@ -46,3 +46,4 @@ class OrderState(TypedDict):
 
     prix_input_tokens : float
     prix_output_tokens : float
+    Huron_related: bool

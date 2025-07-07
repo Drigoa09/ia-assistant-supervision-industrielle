@@ -9,6 +9,8 @@ import os
 #from langchain_core.messages import AIMessage
 #from logic.core import process_user_input
 
+from index import formalisateur_requete
+
 class ChatController:
     style = "padding-left: 20px; margin: 0; white-space: pre-wrap; font-family: Consolas, monospace; line-height: 1.4em;"
 
@@ -118,8 +120,12 @@ class ChatController:
         if path:
             self.load_history_from_file(path)
     def _format_summary(self, state):
-        req_init = state.get("request_call_initial", None)
         req = state.get("request_call", None)
+
+        if state.get("Huron_related"):
+            req_init = state.get("request_call_initial", None)
+        else:
+            req_init = req
         fonctions = state.get("traitement_format", None)
         traitements = state.get("traitements", None)
         input_tokens = state.get("latest_input_tokens", None)
@@ -128,52 +134,67 @@ class ChatController:
         if not req:
             return "🤷 Je n’ai pas pu extraire la requête utilisateur."
 
-        lines = []
-        lines.append("📋 Résumé de la requête\n")
-        lines.append("Nombre de tokens utilisés:\n")
-        lines.append(f"    ➡️ Tokens d'entrée : {input_tokens}")
-        lines.append(f"    ➡️ Tokens de sortie : {output_tokens}\n")
-        lines.append(f"🧠 Question : {req_init.question_utilisateur}")
-        lines.append(f"🎯 Intention : {req_init.intention}")
-        lines.append(f"📂 Type de traitement : {req_init.type_traitement}\n")
-        if hasattr(req, "choix_dataFrames"):
-            lines.append("✅ DataFrames choisis pour affichage :")
-            for i, elem in enumerate(req.choix_dataFrames):
-                lines.append(f"    📄 DataFrame {i + 1} : Index {elem.numero_dataFrame}")
+        if type(req_init) != formalisateur_requete.dict_Structure:
+            lines = []
+            lines.append("📋 Résumé de la requête\n")
+            lines.append("Nombre de tokens utilisés:\n")
+            lines.append(f"    ➡️ Tokens d'entrée : {input_tokens}")
+            lines.append(f"    ➡️ Tokens de sortie : {output_tokens}\n")
+            lines.append(f"🧠 Question : {req_init.question_utilisateur}")
+            lines.append(f"🎯 Intention : {req_init.intention}")
+            lines.append(f"📂 Type de traitement : {req_init.type_traitement}\n")
+            if hasattr(req, "choix_dataFrames"):
+                lines.append("✅ DataFrames choisis pour affichage :")
+                for i, elem in enumerate(req.choix_dataFrames):
+                    lines.append(f"    📄 DataFrame {i + 1} : Index {elem.numero_dataFrame}")
 
-        if req_init.elements_cherches_request:
-            el = req_init.elements_cherches_request[0]
+            if req_init.elements_cherches_request:
+                el = req_init.elements_cherches_request[0]
 
-            if el.periode_requete:
-                date_from = el.periode_requete.date_from.split("T")[0]
-                date_to = el.periode_requete.date_to.split("T")[0]
-                lines.append(f"\n🗓️ Période : {date_from} → {date_to}")
-            if el.machine_request:
-                lines.append(f"🏭 Machine : {el.machine_request.name}")
-            if el.variables_requete:
-                lines.append("🔧 Variables de la requête :")
-                for v in el.variables_requete:
-                    lines.append(f"    ➡️ {v.role} : {v.alias}")
+                if el.periode_requete:
+                    date_from = el.periode_requete.date_from.split("T")[0]
+                    date_to = el.periode_requete.date_to.split("T")[0]
+                    lines.append(f"\n🗓️ Période : {date_from} → {date_to}")
+                if el.machine_request:
+                    lines.append(f"🏭 Machine : {el.machine_request.name}")
+                if el.variables_requete:
+                    lines.append("🔧 Variables de la requête :")
+                    for v in el.variables_requete:
+                        lines.append(f"    ➡️ {v.role} : {v.alias}")
 
-        if req_init.resultat_attendu:
-            try:
-                lines.append(f"\n📌 Résultat attendu : {', '.join(req_init.resultat_attendu)}")
-            except TypeError:
-                lines.append(f"📌 Résultat attendu : {req_init.resultat_attendu}")
+            if req_init.resultat_attendu:
+                try:
+                    lines.append(f"\n📌 Résultat attendu : {', '.join(req_init.resultat_attendu)}")
+                except TypeError:
+                    lines.append(f"📌 Résultat attendu : {req_init.resultat_attendu}")
 
-        lines.append("\n🔧 Traitements effectués :")
-        if traitements:
-            for i, t in enumerate(traitements):
-                lines.append(f"    ➡️ Traitement {i + 1} : {t}")
+            lines.append("\n🔧 Traitements effectués :")
+            if traitements:
+                for i, t in enumerate(traitements):
+                    lines.append(f"    ➡️ Traitement {i + 1} : {t}")
+            else:
+                lines.append("    ➡️ Aucun traitement déclaré")
+
+            lines.append("\n🛠️ Fonctions appliquées :")
+            if fonctions and hasattr(fonctions, "fonction_appelee"):
+                args_str = ', '.join(str(arg) for arg in fonctions.args)
+                lines.append(f"    ⚙️ Fonction : {fonctions.fonction_appelee.value} avec args {args_str}")
+            else:
+                lines.append("    ⚙️ Aucune fonction détectée ou applicable")
         else:
-            lines.append("    ➡️ Aucun traitement déclaré")
-
-        lines.append("\n🛠️ Fonctions appliquées :")
-        if fonctions and hasattr(fonctions, "fonction_appelee"):
-            args_str = ', '.join(str(arg) for arg in fonctions.args)
-            lines.append(f"    ⚙️ Fonction : {fonctions.fonction_appelee.value} avec args {args_str}")
-        else:
-            lines.append("    ⚙️ Aucune fonction détectée ou applicable")
+            lines = []
+            if req_init.object:
+                lines.append(f"Objet(s) recherché(s): {req_init.object}")
+            else:
+                lines.append("Objet(s) recherché(s): Tous les objets")
+            if req_init.area:
+                lines.append(f"Zone(s) recherchée(s): {req_init.area}")
+            else:
+                lines.append("Zone(s) recherchée(s): Toutes les zones")
+            if req_init.startDate and req_init.endDate:
+                lines.append(f"Période: {req_init.startDate} ->  {req_init.endDate}")
+            else:
+                lines.append("Période: 90 jours avant aujourd'hui")
 
         # 💡 Converti le tout dans un bloc HTML <pre> avec style propre
         content = "\n".join(lines)

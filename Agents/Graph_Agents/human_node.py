@@ -39,6 +39,8 @@ def human_node(state: OrderState) -> OrderState:
         print("[Utilisateur]:", last_msg.content + obtenir_date_ajd())
         state["question"] = last_msg.content + obtenir_date_ajd()
 
+    print(f"""state : {state["finished"]}""")
+
     return state
 
 
@@ -58,9 +60,9 @@ def human_node(state: OrderState) -> OrderState:
     return state | {"messages": [HumanMessage(user_input)]}
     '''
 
-def maybe_exit_human_node(state: OrderState) -> Literal["Créateur de tâches", "__end__"]:
-    if state.get("finished", False):
+def maybe_exit_human_node(state: OrderState) -> Literal["Trieur de questions", "__end__"]:
+    if state["finished"]:
         return END
-    return "Créateur de tâches"
+    return "Trieur de questions"
 
     

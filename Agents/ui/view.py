@@ -7,7 +7,7 @@ import os
 from PySide6.QtCore import Slot
 from langchain_core.messages import AIMessage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
+from ui.settings import USER_PREFERENCES
 # Vue de la fenêtre de chat
 class ChatWindow(QWidget):
     # Constructeur de la fenêtre de chat
@@ -24,11 +24,19 @@ class ChatWindow(QWidget):
         action_layout = QHBoxLayout()
         self.save_button = QPushButton("📥 Exporter le chat")
         self.load_button = QPushButton("📂 Charger l'historique")
+        self.theme_toggle_button = QPushButton()
+        self.theme_toggle_button.setCursor(Qt.PointingHandCursor)
+        self.theme_toggle_button.setFixedSize(36, 36)
+        self.theme_toggle_button.setStyleSheet("border: none; background: transparent; font-size: 18px;")
+        self.update_theme_icon()  # 🌞 ou 🌙
+
         self.save_button.clicked.connect(lambda: self.controller.save_history_to_file())
         self.load_button.clicked.connect(lambda: self.controller.open_history_file_dialog())
+        self.theme_toggle_button.clicked.connect(self.toggle_theme)
 
         action_layout.addWidget(self.save_button)
         action_layout.addWidget(self.load_button)
+        action_layout.addWidget(self.theme_toggle_button)
 
         self.layout.addLayout(action_layout)  # ➕ tout en haut
         self.chat_scroll = QScrollArea()
@@ -187,10 +195,92 @@ class ChatWindow(QWidget):
         self.quit_button.setObjectName("quit_button")
         self.load_button.setObjectName("load_button")
         self.save_button.setObjectName("save_button")
-
+        self.apply_theme()
         #self.show_loading()
         #QTimer.singleShot(3000, self.hide_loading)  # Cache l'animation après 3s
+    def update_theme_icon(self):
+        current = USER_PREFERENCES.get("theme", "light")
+        icon = "🌞" if current == "light" else "🌙"
+        self.theme_toggle_button.setText(icon)
 
+    def apply_custom_button_style(self):
+        style = """
+        /* Bouton générique */
+        QPushButton {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 90px;
+        }
+
+        QPushButton:hover {
+            padding: 9px 15px;
+        }
+
+        /* Bouton Envoyer (Bleu) */
+        QPushButton#send_button {
+            background-color: #2196F3;
+            color: white;
+        }
+        QPushButton#send_button:hover {
+            background-color: #1976D2;
+        }
+        QPushButton#send_button:pressed {
+            background-color: #0D47A1;
+        }
+
+        /* Bouton Quitter (Rouge) */
+        QPushButton#quit_button {
+            background-color: #f44336;
+            color: white;
+        }
+        QPushButton#quit_button:hover {
+            background-color: #d32f2f;
+        }
+        QPushButton#quit_button:pressed {
+            background-color: #b71c1c;
+        }
+
+        /* Boutons du haut (Gris/bleu clair) */
+        QPushButton#load_button,
+        QPushButton#save_button,
+        summary_box.toggle_button {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        QPushButton#load_button:hover,
+        QPushButton#save_button:hover {
+            background-color: #bdbdbd;
+        }
+        QPushButton#load_button:pressed,
+        QPushButton#save_button:pressed {
+            background-color: #9e9e9e;
+        }
+        """
+        self.setStyleSheet(self.styleSheet() + style)
+
+    def apply_theme(self):
+        theme_name = USER_PREFERENCES.get("theme", "clair")
+        qss_path = os.path.join(os.path.dirname(__file__), f"{theme_name}_theme.css")
+
+        try:
+            with open(qss_path, "r", encoding="utf-8") as f:
+                qss = f.read()
+                self.setStyleSheet(qss)
+                print(f"🎨 Thème appliqué : {theme_name}")
+                self.apply_custom_button_style()  # ✅ Applique ton style bouton APRÈS
+        except Exception as e:
+            print(f"⚠️ Erreur chargement thème '{theme_name}':", e)
+
+    def toggle_theme(self):
+        current = USER_PREFERENCES.get("theme", "light")
+        USER_PREFERENCES["theme"] = "dark" if current == "light" else "light"
+        self.apply_theme()
+        self.update_theme_icon()
+
+    
     def _open_history_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Charger un historique", "", "Fichiers JSON (*.json)")
         if file_path:
@@ -271,14 +361,20 @@ class ChatWindow(QWidget):
         bubble.setTextFormat(Qt.TextFormat.RichText)
         bubble.setWordWrap(True)
         bubble.setTextInteractionFlags(Qt.TextSelectableByMouse)  # texte sélectionnable
-        bubble.setStyleSheet("""
-            QLabel {
-                background-color: #FFFFFF;
+        theme = USER_PREFERENCES.get("theme", "light")
+        bg = "#FFFFFF" if theme == "light" else "#2c2c2c"
+        fg = "#000000" if theme == "light" else "#eeeeee"
+
+        bubble.setStyleSheet(f"""
+            QLabel {{
+                background-color: {bg};
+                color: {fg};
                 border-radius: 8px;
                 padding: 8px;
                 font-size: 13px;
-            }
+            }}
         """)
+
         bubble.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addWidget(bubble, 1)
 
@@ -348,7 +444,16 @@ class ChatWindow(QWidget):
             label = QLabel(f"<b>Assistant:</b> {html}")
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
-            label.setStyleSheet("padding: 6px;")
+            theme = USER_PREFERENCES.get("theme", "light")
+            text_color = "#333" if theme == "light" else "#eeeeee"
+
+            label.setStyleSheet(f"""
+                QLabel {{
+                    padding: 6px;
+                    color: {text_color};
+                }}
+            """)
+
             content_widget = label
 
         # 💬 Crée une bulle avec icône
