@@ -30,6 +30,7 @@ class CreateurTache(Agent):
 
         #Affichage de la réponse de structured_llm
         print(f"Information cherchée : {new_output['parsed'].INFORMATION_CHERCHER} \n")
+        print(f"Justification : {new_output['parsed'].DESCRIPTION_IMFORMATION_CHERCHER}")
         
         if hasattr(new_output['parsed'], 'TRAITEMENT') and new_output['parsed'].TRAITEMENT != None:
             state['traitements'] = new_output['parsed'].TRAITEMENT

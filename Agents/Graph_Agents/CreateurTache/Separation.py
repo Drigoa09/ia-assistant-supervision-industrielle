@@ -9,4 +9,6 @@ class Separation(BaseModel):
     """
 
     INFORMATION_CHERCHER : str = Field(description = "Information recherchée dans la base de donnée. Exprimé sous forme d'un ordre.")
+    DESCRIPTION_IMFORMATION_CHERCHER : str = Field(description = "Justification de INFORMATION_CHERCHER")
     TRAITEMENT : Optional[List[str]] = Field(default= None, description = "Traitements faits sur les informations de la base de donnée déduit à partir de la question. Exprimé sous forme d'un ordre")
+    DESCRIPTION_TRAITEMENT : Optional[str] = Field(default = None, description = "Justification de TRAITEMENT")
