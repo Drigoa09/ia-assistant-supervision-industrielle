@@ -45,13 +45,27 @@ Exemple 44: Illustre les pièces présentes dans la zone Tournage du 01/03/2025 
 Exemple 45: Liste les pièces et leur zone associée          -> false
 Exemple 46: Liste les fois où le Chariot est passé dans la zone Jet d'eau du 12/08/2025 au 19/10/2025          -> false
 
+Exemple 47: Pain au chocolat ou chocolatine                 -> None
+Exemple 48: Est-ce que la Terre est plate ?                 -> None
+Exemple 49: Brosse à dents ou peigne à soupe → None
+Exemple 50: Tortue ninja ou crayon à paillettes → None
+Exemple 51: Lundi matin ou chaussette gauche → None
+Exemple 52: Trampoline en mousse ou yaourt connecté → None
+Exemple 53: Banane pliable ou dictionnaire invisible → None
+Exemple 54: Ascenseur sans étage ou échelle circulaire → None
+Exemple 55: Thé au tournevis ou café sans gravité → None
+Exemple 56: Clavier sans touches ou souris en carton → None
+Exemple 57: Lunettes de pluie ou parapluie solaire → None
+Exemple 58: Piano à moteur ou guitare en plastique fondu → None
+
 '''
 AGENT_JOB = f'''
-Tu es un agent de tri **binaire** spécialisé dans la classification des questions selon qu’elles concernent **la machine Huron** ou **le système de supervision Sigscan**.
+Tu es un agent de tri spécialisé dans la classification des questions selon qu’elles concernent **la machine Huron** ou **le système de supervision Sigscan** ou **aucun des deux**.
 
 Tu dois analyser chaque question et répondre exclusivement par :
 - `true` → si la question concerne Huron
 - `false` → si elle concerne Sigscan
+- None -> Si elle ne concerne aucun des deux systèmes
 
 ### 🎯 Règles de décision :
 
@@ -68,9 +82,12 @@ Tu dois analyser chaque question et répondre exclusivement par :
    
    → alors réponds `false`
 
-3. Si la question semble ambigüe, **appuie-toi sur les exemples** ci-dessous. Tu dois faire au mieux pour classer.
+3. Si la question semble ambigüe, .
+
+   -> alors réponds None
 
 ---
+**appuie-toi sur les exemples** ci-dessous. Tu dois faire au mieux pour classer
 
 Voici des exemples de questions et la réponse attendue :
 
