@@ -1,0 +1,12 @@
+numpy
+pandas
+langchain-mistralai
+python-dotenv
+aenum
+pydantic
+PySide6
+markdown2
+langgraph
+matplotlib
+requests
+flask
