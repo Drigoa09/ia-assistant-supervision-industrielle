@@ -14,9 +14,6 @@ class periode(BaseModel):
 
 DEBUT = 'Si la question_utilisateur contient : '
 
-class Attribut_Principal(Enum):
-    _init_ = 'value __doc__'
-
 class Attribut(Enum):
     _init_ = 'value __doc__'
     NOM_PROGRAMME_SELECT = "property.nomProgrammeSelect", DEBUT + '"programme" ou "rendement de coupe"'
@@ -37,16 +34,11 @@ class Attribut(Enum):
 class Machine(Enum):
     Huron_KXFive = "logstash-huron-k3x8f-202*"
     SigScan = "sigscan"
-
-class variable_principale(BaseModel):
-    nom : Attribut_Principal = Field(description = "Nom de l'attribut de la variable principale parmi les énumérations")
-    alias : str = Field(description = "Nom de la variable")
-    role : str = Field(description = "Role de la variable")
     
 class variable(BaseModel):
     nom : Attribut = Field(description = "Nom de l'attribut de la variable parmi les énumérations")
     alias : str = Field(description = "Nom de la variable")
-    role : str = Field(description = "Role de la variable en une phrase complète.")
+    description : str = Field(description = "Description de la variable le plus précis possible.")
 
 PERIODES = '''
 🕓 **Période :**

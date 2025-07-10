@@ -26,23 +26,6 @@ EXEMPLES = '''
 Inspire toi des exemples pour élaborer tes réponses.
 En général, on filtre les dataFrames à la fin. Si tu ne le fais pas, on te débranche du DataCenter
 
-
-Exemple :
-Liste les programmes 
-INFORMATION_CHERCHER = "Trouver les programmes"
-
------------------------------------------------------------------------
-
-Exemple :
-Liste les cycles 
-INFORMATION_CHERCHER = "Trouver les cycles"
-
------------------------------------------------------------------------
-
-Exemple :
-Liste les outils
-INFORMATION_CHERCHER = "Trouver les outils"
-
 Exemple :
 Trouver les programmes en fonction de leur cycle associé.
 
@@ -86,7 +69,7 @@ INFORMATION_CHERCHER = "Trouver les alarmes entre le 01/03/2025 et le 01/06/2025
 
 '''
 #Prompt donné à l'agent
-AGENT_JOB = f'''
+AGENT = f'''
 Tu es chargé de traiter une question pour en extraire l'information cherchée et les traitements à effectuer
 sur cette information. Exprime l'information cherchée et les traitements sous la forme d'un ordre.
 Il est possible que des traitements ne soit pas associé à une question. 
@@ -115,4 +98,3 @@ Si aucune date n'est précisé, prendre entre aujourd'hui et 90 jours avant
 
 {EXEMPLES}
 '''
-

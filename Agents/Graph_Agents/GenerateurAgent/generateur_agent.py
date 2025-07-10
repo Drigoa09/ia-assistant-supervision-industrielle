@@ -5,16 +5,20 @@ from pydantic import BaseModel, Field
 
 from typing import List
 from Graph_Agents.Agent import Agent
+
 class Element(BaseModel):
 
     numero_dataFrame : int = Field(description = "Numéro du dataFrame où est contenu l'élément")
+    description : str = Field(description = "Description de la DataFrame")
 
 class Choix(BaseModel):
 
     choix_dataFrames : List[Element] = Field(description="Choix des dataFrames à afficher")
+    description : str = Field(description = "Justification de l'affichage de ces dataFrames")
+
 class Generateur_agent(Agent):
 
-    def __init__(self, Choix: BaseModel):
+    def __init__(self, Choix: Choix):
         self.model_with_structured_output = model_mistral_medium.with_structured_output(Choix, include_raw=True)
 
     def interaction(self, state: OrderState) -> OrderState:
@@ -48,10 +52,12 @@ class Generateur_agent(Agent):
 
         request = self.model_with_structured_output.invoke([AGENT_JOB])
 
-        state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(request['raw'])
+        input_token, output_token = self.obtenir_tokens(request['raw'])
+        state['input_tokens'] += input_token
+        state['output_tokens'] += output_token
         
-        state['prix_input_tokens'] += state['input_tokens'] * 0.4 / 10 ** 6
-        state['prix_output_tokens'] += state['output_tokens'] * 2 / 10 ** 6
+        state['prix_input_tokens'] += input_token * 0.4 / 10 ** 6
+        state['prix_output_tokens'] += output_token * 2 / 10 ** 6
 
         print(request['parsed'])
 

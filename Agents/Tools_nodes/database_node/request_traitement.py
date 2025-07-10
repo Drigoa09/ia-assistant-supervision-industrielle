@@ -1,4 +1,4 @@
-from Graph_Agents.ExtractDocsAgent.request_format import request, Attribut_Principal
+from Graph_Agents.ExtractDocsAgent.request_format import request
 import requests
 import urllib3
 import warnings
@@ -7,6 +7,8 @@ import warnings
 import pandas as pd
 
 import os
+
+# POUR LA CONNEXION A ELASTICSEARCH
 
 ES_HOST = os.getenv("ES_HOST")
 USERNAME = os.getenv("ES_USER")
@@ -20,7 +22,7 @@ warnings.filterwarnings(
     message=r"Pydantic serializer warnings:.*PydanticSerializationUnexpectedValue.*",
     category=UserWarning,
 )
-
+# Fonction permettant de transformer les résultats de la requête en Dataframes
 def build_dataframes(hits, fields, fields_alias):
     dfs = {}
 
@@ -47,10 +49,10 @@ def traitement(request : request):
 
     fields = [variables_requete.nom.value for variables_requete in request.variables_requete]
     fields_alias = [variables_requete.alias for variables_requete in request.variables_requete]
-    fields_role = [variables_requete.role for variables_requete in request.variables_requete]
+    fields_role = [variables_requete.description for variables_requete in request.variables_requete]
 
     index = request.machine_request.value
-    
+    # Construction de la requête Elasticsearch
     while True:
         query = {
                 "size": 1000,

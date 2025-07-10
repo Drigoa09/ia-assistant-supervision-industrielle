@@ -17,22 +17,20 @@ def treatment_node(state: OrderState) -> OrderState:
 
     if state['traitement'] != None:
 
-        # 🔁 Tentative de récupération sécurisée
+        # Tentative de récupération sécurisée
         traitement_format = state.get("traitement_format")
         if traitement_format is None:
             raise ValueError("❌ traitement_format est totalement absent, même en fallback ! Clés disponibles : " + str(state.keys()))
 
-        args_restants = []
         new_dataFrames = []
 
         fonction_appelee = traitement_format
-            
-        new_dataFrames += D[fonction_appelee.fonction_appelee](state['dataFrames'], fonction_appelee.args)
 
         if fonction_appelee.fonction_appelee == fonctions_existantes.CREER_GRAPHIQUE:
-            state['figure'] = new_dataFrames
-
-        state['dataFrames'] = new_dataFrames
+            state['figure'] = D[fonction_appelee.fonction_appelee](state['dataFrames'], fonction_appelee.args)
+        else:
+            new_dataFrames += D[fonction_appelee.fonction_appelee](state['dataFrames'], fonction_appelee.args)
+            state['dataFrames'] = new_dataFrames
 
         message = ""
 

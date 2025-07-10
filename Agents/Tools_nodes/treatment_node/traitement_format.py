@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from aenum import Enum
 
@@ -57,7 +57,6 @@ Pour n_premiers :
     Argument 2 : Nombre d'éléments voulus
     ---------------------------------------------------------------------------------------------------------------------------------------
 '''
-from typing import Union
 
 class Element(BaseModel):
 
@@ -72,3 +71,5 @@ class fonction(BaseModel):
 class Traitement_Format(BaseModel):
 
     fonction_appelee : fonction = Field(description="Fonction appelée")
+    description : str = Field(description = "Justification des actions effectuées")
+

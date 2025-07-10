@@ -1,5 +1,7 @@
 from Tools_nodes.database_node.database_node import DataFrameRole
 
+import pandas as pd
+
 # Extraire les intervalles de cycle
 def extraire_intervalles(df_source, df_contextes, variables_contextes, moment, seuil_pause=5):
     df_source = df_source.copy()
@@ -35,7 +37,6 @@ def extraire_intervalles(df_source, df_contextes, variables_contextes, moment, s
 
     return periodes
 
-import pandas as pd
     
 def exprimer_information_en_fonction_autre(dataFrames, args):
 
@@ -70,3 +71,4 @@ def exprimer_information_en_fonction_autre(dataFrames, args):
     new_dataFrames.append(DataFrameRole(df_final, role))
 
     return new_dataFrames
+

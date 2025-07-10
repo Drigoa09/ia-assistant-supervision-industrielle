@@ -15,10 +15,12 @@ class Extract_docs_agent(Agent):
         # Appel du modèle structuré
         req = self.structured_llm.invoke(state['information_chercher'])
 
-        state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(req['raw'])
+        input_token, output_token = self.obtenir_tokens(req['raw'])
+        state['input_tokens'] += input_token
+        state['output_tokens'] += output_token
         
-        state['prix_input_tokens'] += state['input_tokens'] * 0.3 / 10 ** 6
-        state['prix_output_tokens'] += state['output_tokens'] * 0.9 / 10 ** 6
+        state['prix_input_tokens'] += input_token * 0.3 / 10 ** 6
+        state['prix_output_tokens'] += output_token * 0.9 / 10 ** 6
 
         # ✅ Stocker proprement
         state['request_call'] = req['parsed']
@@ -26,3 +28,4 @@ class Extract_docs_agent(Agent):
         print("➡️ Requête extraite :", req['parsed'])
         print("📦 State keys: EXTRACT_DOC", list(state.keys()))
         return state
+

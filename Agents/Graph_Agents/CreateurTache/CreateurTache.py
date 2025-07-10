@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from OrderState import OrderState
 from model import model_codestral, model_mistral_medium
-from Graph_Agents.CreateurTache.CreateurTache_Prompt import AGENT_JOB
+from Graph_Agents.CreateurTache.CreateurTache_Prompt import AGENT
 
 from Graph_Agents.Agent import Agent
 
@@ -20,11 +20,14 @@ class CreateurTache(Agent):
         """The chatbot itself. A wrapper around the model's own chat interface."""
 
         #Appel à structured_llm
-        new_output = self.structured_llm.invoke([AGENT_JOB, state['question']])
+        new_output = self.structured_llm.invoke([AGENT, state['question']])
 
-        state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(new_output['raw'])
-        state['prix_input_tokens'] += state['input_tokens'] * 0.4 / 10 ** 6
-        state['prix_output_tokens'] += state['output_tokens'] * 2 / 10 ** 6
+        input_token, output_token = self.obtenir_tokens(new_output['raw'])
+        state['input_tokens'] += input_token
+        state['output_tokens'] += output_token
+
+        state['prix_input_tokens'] += input_token * 0.4 / 10 ** 6
+        state['prix_output_tokens'] += output_token * 2 / 10 ** 6
 
         state['information_chercher'] = new_output['parsed'].INFORMATION_CHERCHER
 

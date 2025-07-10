@@ -7,6 +7,6 @@ def plus_occurent(dataFrames, args):
     for arg in args:
         frame = dataFrames[arg.numero_dataFrame].dataFrame[arg.cle_dataFrame].value_counts().to_frame()
         frame.columns = ["Occurences"]
-        new_dataFrames.append(DataFrameRole(frame, dataFrames[arg.numero_dataFrame].role + " avec les occurences"))
+        new_dataFrames.append(DataFrameRole(frame, f"Occurences avec cette information : {arg.cle_dataFrame}"))
 
     return new_dataFrames

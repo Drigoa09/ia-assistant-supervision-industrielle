@@ -31,6 +31,7 @@ class Worker(QObject):
                 "prix_output_tokens" : 0
             }
             result = chat_with_human_graph.invoke(state, config={"recursion_limit": 100})
+            print(result)
             new_history = result["messages"]
             
             # ✅ Astuce sécurité : pas d’objet Qt dans le state retourné
@@ -38,3 +39,4 @@ class Worker(QObject):
             self.finished.emit(new_history, state_copy)
         except Exception as e:
             self.error.emit(str(e))
+

@@ -28,6 +28,8 @@ def human_node(state: OrderState) -> OrderState:
     state['input_tokens'] = 0
     state['output_tokens'] = 0
 
+    state['latest_prix_input_tokens'] = state['prix_input_tokens']
+    state['latest_prix_output_tokens'] = state['prix_output_tokens']
     state['prix_input_tokens'] = 0
     state['prix_output_tokens'] = 0
 

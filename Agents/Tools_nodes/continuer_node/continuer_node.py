@@ -24,3 +24,4 @@ class Continuer_node():
             return "Formulateur de requêtes de traitement"
         else:
             return "Générateur de réponse"
+

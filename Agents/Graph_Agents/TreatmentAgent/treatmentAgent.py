@@ -23,10 +23,13 @@ class TreatmentAgent(Agent):
         # Appelle le modèle avec prompt fusionné
         traitement_format_result = self.structured_llm.invoke(prompt)
 
-        state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(traitement_format_result['raw'])
+        input_token, output_token = self.obtenir_tokens(traitement_format_result['raw'])
+        state['input_tokens'] += input_token
+        state['output_tokens'] += output_token
         
-        state['prix_input_tokens'] += state['input_tokens'] * 0.3 / 10 ** 6
-        state['prix_output_tokens'] += state['output_tokens'] * 0.9 / 10 ** 6
+        state['prix_input_tokens'] += input_token * 0.3 / 10 ** 6
+        state['prix_output_tokens'] += output_token * 0.9 / 10 ** 6
+    
 
         #print("🧪 Résultat traitement_format:", traitement_format_result)
 
@@ -61,4 +64,6 @@ class TreatmentAgent(Agent):
         job_message += '''Tu ne peux utiliser que ces clés de dataFrame. Il n'est pas possible d'en utiliser des variantes'''
 
         return job_message
+
+
 

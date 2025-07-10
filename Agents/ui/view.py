@@ -9,6 +9,7 @@ from langchain_core.messages import AIMessage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from ui.settings import USER_PREFERENCES
 # Vue de la fenêtre de chat
+# Vue de la fenêtre de chat
 class ChatWindow(QWidget):
     # Constructeur de la fenêtre de chat
     def __init__(self, controller):
@@ -554,3 +555,4 @@ class ChatWindow(QWidget):
     def display_error(self, error_msg):
         self.append_message("Erreur", error_msg)
         self.hide_loading()
+

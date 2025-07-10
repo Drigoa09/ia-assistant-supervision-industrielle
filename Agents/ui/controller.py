@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 import json
 from datetime import datetime
 import os
+import numpy as np
 #from langchain_core.messages import AIMessage
 #from logic.core import process_user_input
 
@@ -130,7 +131,8 @@ class ChatController:
         traitements = state.get("traitements", None)
         input_tokens = state.get("latest_input_tokens", None)
         output_tokens = state.get("latest_output_tokens", None)
-
+        prix_input_tokens = state.get("latest_prix_input_tokens", None)
+        prix_output_tokens = state.get("latest_prix_output_tokens", None)
         if not req:
             return "🤷 Je n’ai pas pu extraire la requête utilisateur."
 
@@ -140,6 +142,9 @@ class ChatController:
             lines.append("Nombre de tokens utilisés:\n")
             lines.append(f"    ➡️ Tokens d'entrée : {input_tokens}")
             lines.append(f"    ➡️ Tokens de sortie : {output_tokens}\n")
+            lines.append("Prix total des tokens utilisés:\n")
+            lines.append(f"    ➡️ Prix tokens d'entrée : {np.format_float_positional(prix_input_tokens, precision= 4)} €")
+            lines.append(f"    ➡️ Prix tokens de sortie : {np.format_float_positional(prix_output_tokens, precision= 4)} €\n")
             lines.append(f"🧠 Question : {req_init.question_utilisateur}")
             lines.append(f"🎯 Intention : {req_init.intention}")
             lines.append(f"📂 Type de traitement : {req_init.type_traitement}\n")

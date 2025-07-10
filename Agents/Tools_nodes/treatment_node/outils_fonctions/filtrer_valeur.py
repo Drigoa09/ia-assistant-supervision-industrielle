@@ -34,3 +34,4 @@ def filtrer_valeur(dataFrames, args):
     new_dataFrames.append(DataFrameRole(dataFrame, dataFrames[args[2].numero_dataFrame].role + " Filtré par la fonction filtrer_valeur"))
 
     return new_dataFrames
+

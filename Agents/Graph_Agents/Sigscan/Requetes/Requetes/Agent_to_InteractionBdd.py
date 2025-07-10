@@ -11,6 +11,6 @@ fields = {
     "object" : (any, ...),
     "area" : (any, ...),
     "startDate" : (Optional[Temps], Field(default = None, description = "Date de début des positions")),
-    "endDate" : (Optional[Temps], Field(default = None, description = "Date de fin des positions"))
+    "endDate" : (Optional[Temps], Field(default = None, description = "Date de fin des positions")),
+    "description" : (str, Field(description = "Explication des choix effectués"))
 }
-

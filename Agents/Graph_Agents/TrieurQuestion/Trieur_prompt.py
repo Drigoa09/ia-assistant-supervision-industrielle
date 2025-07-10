@@ -57,7 +57,6 @@ Exemple 55: Thé au tournevis ou café sans gravité → None
 Exemple 56: Clavier sans touches ou souris en carton → None
 Exemple 57: Lunettes de pluie ou parapluie solaire → None
 Exemple 58: Piano à moteur ou guitare en plastique fondu → None
-
 '''
 AGENT_JOB = f'''
 Tu es un agent de tri spécialisé dans la classification des questions selon qu’elles concernent **la machine Huron** ou **le système de supervision Sigscan** ou **aucun des deux**.

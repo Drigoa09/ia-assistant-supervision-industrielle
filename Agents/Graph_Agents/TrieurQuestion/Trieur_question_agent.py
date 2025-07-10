@@ -18,21 +18,24 @@ class Trieur_question_agent(Agent):
     def interaction(self, state: OrderState) -> OrderState:
         new_output = self.structured_llm.invoke([AGENT_JOB, state['question']])
         print(f"Réponse brute : {new_output}")
-        state['input_tokens'], state['output_tokens'] = self.obtenir_tokens(new_output['raw'])
-        state['prix_input_tokens'] += state['input_tokens'] * 0.4 / 10 ** 6
-        state['prix_output_tokens'] += state['output_tokens'] * 2 / 10 ** 6
+
+        input_token, output_token = self.obtenir_tokens(new_output['raw'])
+        state['input_tokens'] += input_token
+        state['output_tokens'] += output_token
+        
+        state['prix_input_tokens'] += input_token * 0.4 / 10 ** 6
+        state['prix_output_tokens'] += output_token * 2 / 10 ** 6
 
         parsed = new_output.get('parsed')
         if parsed is not None and hasattr(parsed, 'result'):
             val = parsed.result
             if val == None:
                 state['Huron_related'] = None
-                state['messages'].append(AIMessage(content = "Réponse incomprise"))
+                state['messages'].append(AIMessage(content = "Question incomprise"))
             elif val:
                 state['Huron_related'] = True
             elif not val:
                 state['Huron_related'] = False
-                #None
             print(f"✅ Question en relation avec Huron : {state['Huron_related']}")
         else:
             raise ValueError("❌ Parsing échoué : pas de champ 'result' dans la sortie.")
